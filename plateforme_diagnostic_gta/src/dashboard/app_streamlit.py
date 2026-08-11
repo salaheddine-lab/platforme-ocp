@@ -30,11 +30,12 @@ if 'authentifie' not in st.session_state:
     st.session_state['authentifie'] = False
 
 def page_connexion():
-    """Affiche la page de login avec le design en deux colonnes (carte blanche centrale)."""
+    """Affiche la page de login conçue exactement selon le modèle de référence."""
     img_b64 = get_base64_of_bin_file(chemin_fond)
     
     custom_css = f"""
     <style>
+        /* Arrière-plan photo minière */
         .stApp {{
             background-image: url("data:image/jpg;base64,{img_b64}");
             background-size: cover;
@@ -47,39 +48,84 @@ def page_connexion():
         [data-testid="stSidebar"] * {{
             color: white !important;
         }}
-        .login-box-container {{
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0px 10px 30px rgba(0,0,0,0.4);
+        
+        /* Carte blanche centrale aux proportions exactes du modèle */
+        .exact-login-card {{
+            background-color: #ffffff;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            max-width: 850px;
+            margin: 0 auto;
+        }}
+        
+        /* Personnalisation des champs de texte pour imiter le modèle */
+        div[data-baseweb="input"] {{
+            border-radius: 8px !important;
+            background-color: #f0f4f9 !important;
+            border: 1px solid #e1e8ed !important;
+        }}
+        div[data-baseweb="input"]:focus-within {{
+            border-color: #00A971 !important;
+            background-color: #ffffff !important;
+        }}
+        
+        /* Bouton de connexion style pilule identique au modèle */
+        .stButton button {{
+            background-color: #00A971 !important;
+            color: white !important;
+            border-radius: 25px !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            padding: 10px 0px !important;
+            width: 100% !important;
+            border: none !important;
+            box-shadow: 0 4px 12px rgba(0, 169, 113, 0.35) !important;
+            transition: all 0.3s ease;
+        }}
+        .stButton button:hover {{
+            background-color: #008f5f !important;
+            box-shadow: 0 6px 15px rgba(0, 169, 113, 0.5) !important;
         }}
     </style>
     """
     st.markdown(custom_css, unsafe_allow_html=True)
     st.write("<br><br><br>", unsafe_allow_html=True)
     
-    col_ext1, col_centre, col_ext2 = st.columns([1, 2.2, 1])
+    # Structure de centrage de la carte
+    col_ext1, col_centre, col_ext2 = st.columns([0.8, 3.2, 0.8])
     
     with col_centre:
-        st.markdown('<div class="login-box-container">', unsafe_allow_html=True)
-        col_logo, col_form = st.columns([1, 1.2], gap="medium")
+        st.markdown('<div class="exact-login-card">', unsafe_allow_html=True)
+        
+        # Deux colonnes internes : Logo à gauche, Textes & Formulaire à droite
+        col_logo, col_form = st.columns([1, 1.3], gap="large")
         
         with col_logo:
             st.write("<br><br>", unsafe_allow_html=True)
             if os.path.exists(chemin_logo):
-                st.image(chemin_logo, width=180)
+                st.image(chemin_logo, width=210)
             else:
                 st.markdown("### 🟢 Groupe OCP")
                 
         with col_form:
-            st.markdown("<h3 style='color: #2c3e50; font-size: 20px; margin-bottom: 0px;'>Bienvenue sur votre portail GTA</h3>", unsafe_allow_html=True)
-            st.markdown("<p style='color: #666; font-size: 13px;'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
+            st.markdown("""
+                <div style="font-family: sans-serif; margin-bottom: 20px;">
+                    <h2 style="color: #4a5568; font-size: 24px; font-weight: 500; margin-bottom: 5px; line-height: 1.2;">
+                        Bienvenue sur votre<br>portail <span style="color: #2d3748; font-weight: 700;">GTA</span>
+                    </h2>
+                    <p style="color: #718096; font-size: 13px; margin-top: 8px;">
+                        Merci de rentrer votre identifiant et mot de passe
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
             
             with st.form("login_form"):
                 utilisateur = st.text_input("Identifiant *")
                 mot_de_passe = st.text_input("Mot de passe *", type="password")
-                st.write("")
-                bouton_login = st.form_submit_button("Se connecter", use_container_width=True)
+                
+                st.write("<br>", unsafe_allow_html=True)
+                bouton_login = st.form_submit_button("Se connecter")
                 
                 if bouton_login:
                     if utilisateur == "admin" and mot_de_passe == "admin":
@@ -87,6 +133,7 @@ def page_connexion():
                         st.rerun()
                     else:
                         st.error("Identifiants incorrects.")
+                        
         st.markdown('</div>', unsafe_allow_html=True)
 
 # --- FONCTION DE SIMULATION ---
@@ -208,7 +255,6 @@ def page_dashboard():
             # --- CREATION DU GRAPHIQUE DESIGN ET PROFESSIONNEL ---
             fig = make_subplots(specs=[[{"secondary_y": True}]])
             
-            # Courbe de rendement stylisée (Vert OCP, lissée, avec points)
             fig.add_trace(go.Scatter(
                 x=st.session_state.historique['Temps'], 
                 y=st.session_state.historique['Rendement'], 
@@ -218,7 +264,6 @@ def page_dashboard():
                 marker=dict(size=6, color='#007A33')
             ), secondary_y=False)
             
-            # Courbe d'encrassement stylisée (Rouge élégant, pointillée)
             fig.add_trace(go.Scatter(
                 x=st.session_state.historique['Temps'], 
                 y=st.session_state.historique['Resistance_Thermique'], 
@@ -228,7 +273,6 @@ def page_dashboard():
                 marker=dict(size=5, color='#E74C3C')
             ), secondary_y=True)
             
-            # Mise en page moderne et soignée
             fig.update_layout(
                 template='plotly_white',
                 title=dict(
@@ -247,7 +291,6 @@ def page_dashboard():
                 height=400
             )
             
-            # Grilles et axes propres
             fig.update_xaxes(showgrid=True, gridcolor='#f0f2f6', linecolor='#dcdcdc')
             fig.update_yaxes(title_text="<b>Rendement (%)</b>", secondary_y=False, showgrid=True, gridcolor='#f0f2f6', linecolor='#dcdcdc')
             fig.update_yaxes(title_text="<b>Résistance Thermique (K/kW)</b>", secondary_y=True, showgrid=False, linecolor='#dcdcdc')
