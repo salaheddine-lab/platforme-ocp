@@ -1,12 +1,10 @@
-import base64
-from pathlib import Path
 import streamlit as st
 import pandas as pd
 import numpy as np
 import time
 import plotly.graph_objects as go
-import os
 
+# --- 1. CONFIGURATION GLOBALE DE LA PAGE ---
 st.set_page_config(
     page_title="Dashboard GTA",
     page_icon="🏭",
@@ -14,24 +12,14 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ---------------------------------------------------------------------------
-# Gestion de l'état d'authentification et du nom d'utilisateur
-# ---------------------------------------------------------------------------
+# --- GESTION DE L'ÉTAT DE SESSION ---
 if 'authentifie' not in st.session_state:
     st.session_state['authentifie'] = False
 if 'username' not in st.session_state:
     st.session_state['username'] = "admin"
 
 # ---------------------------------------------------------------------------
-# Logo OCP pour la barre supérieure (en PNG s'il existe)
-# ---------------------------------------------------------------------------
-dossier_actuel = Path(__file__).parent
-LOGO_PATH = dossier_actuel / "../../assets/ocp_logo.png"
-if not LOGO_PATH.exists():
-    LOGO_PATH = dossier_actuel / "../../assets/Ocp-Logo-Vector.svg-.png"
-
-# ---------------------------------------------------------------------------
-# Page de Connexion (Fidèle à votre code HTML d'origine)
+# 2. PAGE DE CONNEXION (Design fidèle et pixel-perfect)
 # ---------------------------------------------------------------------------
 def page_connexion():
     st.markdown(
@@ -60,7 +48,7 @@ def page_connexion():
             max-width: 760px;
         }
 
-        /* ---- Carte de connexion ---- */
+        /* ---- Carte de connexion arrondie ---- */
         .login-card {
             background: #ffffff;
             border-radius: 22px;
@@ -80,7 +68,7 @@ def page_connexion():
             padding: 20px;
         }
 
-        /* ---- Logo OCP vectoriel natif ---- */
+        /* ---- Logo OCP vectoriel stylisé ---- */
         .ocp-logo {
             display: flex;
             flex-direction: column;
@@ -155,7 +143,7 @@ def page_connexion():
             line-height: 1.5;
         }
 
-        /* ---- Champs de saisie (Streamlit widgets) ---- */
+        /* ---- Champs de saisie personnalisés ---- */
         div[data-testid="stTextInput"] label,
         div[data-testid="stTextInput"] p {
             font-size: 13px !important;
@@ -184,24 +172,23 @@ def page_connexion():
             border: none;
         }
 
-        /* Bouton Connecter */
+        /* ---- Bouton Vert en forme de pilule ---- */
         div.stButton > button {
-            background: #14b391;
-            color: #ffffff;
-            border: none;
-            padding: 12px 34px;
-            border-radius: 24px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: 'Poppins', Arial, sans-serif;
-            margin-top: 18px;
-            transition: background 0.2s ease;
+            background: #14b391 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 12px 34px !important;
+            border-radius: 24px !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            font-family: 'Poppins', Arial, sans-serif !important;
+            margin-top: 18px !important;
+            transition: background 0.2s ease !important;
             width: auto !important;
         }
 
         div.stButton > button:hover {
-            background: #109c7f;
-            color: #ffffff;
+            background: #109c7f !important;
         }
         </style>
         """,
@@ -221,7 +208,7 @@ def page_connexion():
                     <div class="ocp-subtitle">GROUPE OCP</div>
                 </div>
             </div>
-            <div class="card-right" id="form-container">
+            <div class="card-right">
                 <div class="welcome-title">Bienvenue sur votre<br><b>Dashboard GTA</b></div>
                 <div class="welcome-sub">Merci de rentrer votre identifiant et mot de passe</div>
         """,
@@ -243,8 +230,9 @@ def page_connexion():
 
     st.markdown("</div></div>", unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------------------------
-# Fonction de Simulation en temps réel
+# 5. SIMULATION DE DONNÉES EN ARRIÈRE-PLAN
 # ---------------------------------------------------------------------------
 def generer_ligne_simulee(iteration):
     rth_base = 0.00012 + (iteration * 0.000001)
@@ -253,11 +241,11 @@ def generer_ligne_simulee(iteration):
     rendement = 88.5 - (iteration * 0.01)
     
     if rth_base > 0.00013:
-        alerte = "⚠️ Attention : Encrassement détecté sur le condenseur !"
+        alerte = "⚠️ Attention : Risque d'encrassement détecté sur le condenseur !"
     elif pertes_turb > 1250:
-        alerte = "⚠️ Alerte : Pertes thermiques élevées sur la turbine !"
+        alerte = "⚠️ Alerte : Pertes thermiques élevées enregistrées sur la turbine !"
     else:
-        alerte = "✅ Système stable - Fonctionnement nominal optimal."
+        alerte = "✅ Système stable - Fonctionnement nominal optimal du GTA."
 
     return {
         'Temps': pd.Timestamp.now().strftime('%H:%M:%S'),
@@ -268,15 +256,16 @@ def generer_ligne_simulee(iteration):
         'Alerte': alerte
     }
 
+
 # ---------------------------------------------------------------------------
-# Tableau de Bord Principal (Post-Connexion)
+# TABLEAU DE BORD PRINCIPAL (Post-connexion)
 # ---------------------------------------------------------------------------
 def page_dashboard():
+    # Application du CSS pour la structure post-connexion (Sidebar étroite ~2cm / 85px)
     st.markdown("""
     <style>
         .stApp { background-image: none !important; background-color: #f4f6f9 !important; }
         
-        /* Sidebar étroite (~2cm / 85px) avec fond vert OCP */
         section[data-testid="stSidebar"] {
             background-color: #007A33 !important;
             width: 85px !important;
@@ -288,14 +277,21 @@ def page_dashboard():
     </style>
     """, unsafe_allow_html=True)
 
-    # --- Barre supérieure compacte (~2 cm de hauteur) avec Logo OCP, username et déconnexion ---
+    # ---------------------------------------------------------------------------
+    # 3. BARRE SUPÉRIEURE (Top Bar - Compacte ~2cm de hauteur)
+    # ---------------------------------------------------------------------------
     col_nav_logo, col_nav_user = st.columns([2, 2])
     
     with col_nav_logo:
-        if LOGO_PATH.exists():
-            st.image(str(LOGO_PATH), width=110)
-        else:
-            st.markdown("### 🟢 OCP")
+        st.markdown(
+            """
+            <div style="display: flex; align-items: center; gap: 8px; padding-top: 5px;">
+                <span style="font-size: 24px; font-weight: 700; color: #007A33;">🟢 OCP</span>
+                <span style="font-size: 14px; font-weight: 600; color: #2c3e50;">| Dashboard GTA</span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
             
     with col_nav_user:
         cols_right = st.columns([3, 2])
@@ -308,9 +304,11 @@ def page_dashboard():
 
     st.markdown("<hr style='margin: 0px 0px 20px 0px;'>", unsafe_allow_html=True)
 
-    # --- Sidebar étroite avec les rubriques demandées ---
+    # ---------------------------------------------------------------------------
+    # 4. BARRE LATÉRALE ÉTROITE (~2 cm / 85px) AVEC LE MENU REQUIS
+    # ---------------------------------------------------------------------------
     with st.sidebar:
-        st.markdown("<h3 style='text-align: center; color: #ffffff; font-size: 16px;'>GTA</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #ffffff; font-size: 15px;'>GTA</h3>", unsafe_allow_html=True)
         menu = st.sidebar.radio(
             "Menu",
             [
@@ -323,12 +321,14 @@ def page_dashboard():
             label_visibility="collapsed"
         )
 
+    # Initialisation de l'historique des données en session
     if 'historique' not in st.session_state:
         st.session_state.historique = pd.DataFrame(columns=[
             'Temps', 'Rendement', 'Resistance_Thermique', 'Pertes_Turbine_kW', 'Pertes_Alternateur_kW', 'Alerte'
         ])
         st.session_state.iter = 0
 
+    # Simulation d'une nouvelle ligne de données à chaque exécution de boucle
     st.session_state.iter += 1
     nv_donnee = generer_ligne_simulee(st.session_state.iter)
     st.session_state.historique = pd.concat(
@@ -336,10 +336,10 @@ def page_dashboard():
         ignore_index=True
     ).tail(30)
 
-    # ================= 1. ACCUEIL =================
+    # ================= 1. PAGE ACCUEIL =================
     if menu == "🏠 Accueil":
-        st.title("🏭 Tableau de Bord - Accueil & Alertes")
-        st.markdown("Centre de supervision et messages d'alerte en temps réel du Groupe Turbo-Alternateur.")
+        st.title("🏭 Tableau de Bord - Accueil & Supervisions")
+        st.markdown("Centre de diagnostic et messages d'alerte en temps réel du Groupe Turbo-Alternateur.")
         st.markdown("---")
         
         st.subheader("🚨 Centre d'Alertes et Diagnostics")
@@ -348,15 +348,15 @@ def page_dashboard():
         else:
             st.success(nv_donnee['Alerte'])
             
-        st.info("ℹ️ Utilisez la barre latérale étroite de gauche pour naviguer entre les différentes sections de calcul et d'analyse.")
+        st.info("ℹ️ Utilisez la barre latérale gauche pour naviguer entre les différents modules de calcul et d'analyse.")
 
-    # ================= 2. RENDEMENT =================
+    # ================= 2. PAGE RENDEMENT =================
     elif menu == "📈 Rendement":
         st.title("📈 Analyse & Calcul du Rendement")
-        st.markdown("Suivi de la courbe d'évolution du rendement global du système en temps réel.")
+        st.markdown("Suivi de l'évolution dynamique du rendement global du système.")
         st.markdown("---")
         
-        st.metric("Rendement Actuel", f"{nv_donnee['Rendement']:.2f} %", delta="+0.1%")
+        st.metric("Rendement Global Actuel", f"{nv_donnee['Rendement']:.2f} %", delta="+0.1%")
         
         fig_rend = go.Figure()
         fig_rend.add_trace(go.Scatter(
@@ -375,10 +375,10 @@ def page_dashboard():
         )
         st.plotly_chart(fig_rend, use_container_width=True)
 
-    # ================= 3. RESISTANCE D'ENCRASSEMENT =================
+    # ================= 3. PAGE RÉSISTANCE D'ENCRASSEMENT =================
     elif menu == "🌡️ Résistance d'encrassement":
         st.title("🌡️ Résistance d'Encrassement")
-        st.markdown("Suivi thermique de l'encrassement du condenseur.")
+        st.markdown("Suivi thermique de l'encrassement du condenseur du Groupe Turbo-Alternateur.")
         st.markdown("---")
         
         st.metric("Résistance Thermique (Rth)", f"{nv_donnee['Resistance_Thermique']:.6f} K/kW")
@@ -400,10 +400,10 @@ def page_dashboard():
         )
         st.plotly_chart(fig_rth, use_container_width=True)
 
-    # ================= 4. PERTE TURBINE =================
+    # ================= 4. PAGE PERTE TURBINE =================
     elif menu == "⚡ Perte turbine":
         st.title("⚡ Calcul des Pertes Turbine")
-        st.markdown("Analyse des pertes thermiques et mécaniques au niveau de la turbine.")
+        st.markdown("Analyse approfondie des pertes thermiques et mécaniques de la turbine.")
         st.markdown("---")
         
         st.metric("Pertes Turbine", f"{nv_donnee['Pertes_Turbine_kW']:.1f} kW", delta="-5 kW", delta_color="inverse")
@@ -425,7 +425,7 @@ def page_dashboard():
         )
         st.plotly_chart(fig_turb, use_container_width=True)
 
-    # ================= 5. PERTE ALTERNATEUR =================
+    # ================= 5. PAGE PERTE ALTERNATEUR =================
     elif menu == "🔌 Perte alternateur":
         st.title("🔌 Calcul des Pertes Alternateur")
         st.markdown("Analyse des pertes énergétiques et électriques au niveau de l'alternateur.")
@@ -450,11 +450,13 @@ def page_dashboard():
         )
         st.plotly_chart(fig_alt, use_container_width=True)
 
+    # Actualisation automatique pour la simulation en direct (toutes les 2 secondes)
     time.sleep(2)
     st.rerun()
 
+
 # ---------------------------------------------------------------------------
-# Routeur principal de l'application
+# ROUTEUR PRINCIPAL DE L'APPLICATION
 # ---------------------------------------------------------------------------
 if not st.session_state['authentifie']:
     page_connexion()
