@@ -23,127 +23,169 @@ if 'username' not in st.session_state:
     st.session_state['username'] = "admin"
 
 # ---------------------------------------------------------------------------
-# Logo OCP encodé en base64 pour un positionnement pixel-perfect
+# Logo OCP pour la barre supérieure (en PNG s'il existe)
 # ---------------------------------------------------------------------------
 dossier_actuel = Path(__file__).parent
-LOGO_PATH = dossier_actuel / "assets" / "ocp_logo.png"
-if not LOGO_PATH.exists():
-    LOGO_PATH = dossier_actuel / "../../assets/ocp_logo.png"
+LOGO_PATH = dossier_actuel / "../../assets/ocp_logo.png"
 if not LOGO_PATH.exists():
     LOGO_PATH = dossier_actuel / "../../assets/Ocp-Logo-Vector.svg-.png"
 
-if LOGO_PATH.exists():
-    logo_b64 = base64.b64encode(LOGO_PATH.read_bytes()).decode()
-else:
-    logo_b64 = ""
-
 # ---------------------------------------------------------------------------
-# Page de Connexion : reproduit fidèlement la maquette originale fournie
+# Page de Connexion (Fidèle à votre code HTML d'origine)
 # ---------------------------------------------------------------------------
 def page_connexion():
     st.markdown(
-        f"""
+        """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-        html, body, [class*="css"] {{
+        html, body, [class*="css"] {
             font-family: 'Poppins', Arial, sans-serif;
-        }}
+        }
 
-        #MainMenu, header, footer {{visibility: hidden;}}
+        #MainMenu, header, footer {visibility: hidden;}
 
-        [data-testid="stAppViewContainer"] {{
+        [data-testid="stAppViewContainer"] {
             background:
                 radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03), transparent 40%),
                 linear-gradient(135deg, #3a3a3a 0%, #1c1c1c 45%, #101010 100%);
-        }}
-
-        [data-testid="stAppViewContainer"] > .main {{
             display: flex;
             align-items: center;
             justify-content: center;
-        }}
+        }
 
-        .block-container {{
+        .block-container {
             padding-top: 4rem;
             padding-bottom: 4rem;
             max-width: 760px;
-        }}
+        }
 
         /* ---- Carte de connexion ---- */
-        .login-card {{
+        .login-card {
             background: #ffffff;
             border-radius: 22px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.45);
             padding: 46px 52px 46px 44px;
-        }}
+            display: flex;
+            width: 720px;
+            max-width: 90vw;
+            margin: auto;
+        }
 
-        .logo-col {{
+        .card-left {
+            flex: 0 0 40%;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
-        }}
+            padding: 20px;
+        }
 
-        .logo-col img {{
-            width: 190px;
-            max-width: 100%;
-        }}
+        /* ---- Logo OCP vectoriel natif ---- */
+        .ocp-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
 
-        .welcome-title {{
+        .ocp-mark {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .ocp-mark .letter {
+            font-size: 64px;
+            font-weight: 700;
+            color: #1a5632;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        .ocp-mark .accent-o {
+            position: relative;
+            display: inline-block;
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2e7d46 0%, #1a5632 100%);
+            margin-right: 4px;
+        }
+
+        .ocp-underline {
+            width: 100%;
+            height: 3px;
+            background: #2e7d46;
+            margin-top: 6px;
+        }
+
+        .ocp-subtitle {
+            font-size: 13px;
+            letter-spacing: 6px;
+            color: #6b6b6b;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .card-right {
+            flex: 1;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .welcome-title {
             font-size: 26px;
             font-weight: 500;
             color: #6b7280;
             line-height: 1.3;
-            margin-bottom: 0;
-        }}
+        }
 
-        .welcome-title b {{
+        .welcome-title b {
             color: #374151;
             font-weight: 700;
-        }}
+        }
 
-        .welcome-sub {{
+        .welcome-sub {
             margin-top: 14px;
             margin-bottom: 6px;
             font-size: 14px;
             color: #6b7280;
             line-height: 1.5;
-        }}
+        }
 
         /* ---- Champs de saisie (Streamlit widgets) ---- */
         div[data-testid="stTextInput"] label,
-        div[data-testid="stTextInput"] p {{
+        div[data-testid="stTextInput"] p {
             font-size: 13px !important;
             color: #14b391 !important;
             font-weight: 500 !important;
             margin-bottom: 2px !important;
-        }}
+        }
 
-        div[data-testid="stTextInput"] input {{
+        div[data-testid="stTextInput"] input {
             font-family: 'Poppins', Arial, sans-serif;
             font-size: 15px;
             color: #374151;
-        }}
+        }
 
-        /* Champ identifiant : simple ligne du bas, comme la maquette */
-        div[data-testid="stTextInput"]:nth-of-type(1) > div > div {{
+        div[data-testid="stTextInput"]:nth-of-type(1) > div > div {
             border: none;
             border-bottom: 1px solid #e5e7eb;
             border-radius: 0;
             background: transparent;
             padding-left: 0;
-        }}
+        }
 
-        /* Champ mot de passe : fond bleu clair arrondi, comme la maquette */
-        div[data-testid="stTextInput"]:nth-of-type(2) > div > div {{
+        div[data-testid="stTextInput"]:nth-of-type(2) > div > div {
             background: #eef0fb;
             border-radius: 6px;
             border: none;
-        }}
+        }
 
         /* Bouton Connecter */
-        div.stButton > button {{
+        div.stButton > button {
             background: #14b391;
             color: #ffffff;
             border: none;
@@ -155,58 +197,51 @@ def page_connexion():
             margin-top: 18px;
             transition: background 0.2s ease;
             width: auto !important;
-        }}
+        }
 
-        div.stButton > button:hover {{
+        div.stButton > button:hover {
             background: #109c7f;
             color: #ffffff;
-        }}
-
-        div.stButton > button:focus:not(:active) {{
-            color: #ffffff;
-        }}
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="login-card">', unsafe_allow_html=True)
-    col_logo, col_form = st.columns([1, 1.6], gap="large")
-
-    with col_logo:
-        st.markdown(
-            f"""
-            <div class="logo-col">
-                <img src="data:image/png;base64,{logo_b64}" alt="Logo OCP" />
+    st.markdown(
+        """
+        <div class="login-card">
+            <div class="card-left">
+                <div class="ocp-logo">
+                    <div class="ocp-mark">
+                        <span class="accent-o"></span>
+                        <span class="letter">CP</span>
+                    </div>
+                    <div class="ocp-underline"></div>
+                    <div class="ocp-subtitle">GROUPE OCP</div>
+                </div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            <div class="card-right" id="form-container">
+                <div class="welcome-title">Bienvenue sur votre<br><b>Dashboard GTA</b></div>
+                <div class="welcome-sub">Merci de rentrer votre identifiant et mot de passe</div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    with col_form:
-        st.markdown(
-            """
-            <div class="welcome-title">Bienvenue sur votre<br><b>Dashboard GTA</b></div>
-            <div class="welcome-sub">Merci de rentrer votre identifiant et mot de passe</div>
-            """,
-            unsafe_allow_html=True,
-        )
+    with st.form("login_form"):
+        identifiant = st.text_input("Identifiant *", value="admin", placeholder="ex: admin")
+        mot_de_passe = st.text_input("Mot de passe *", type="password", value="1234567", placeholder="••••••••")
+        submit = st.form_submit_button("Connecter")
 
-        with st.form("login_form"):
-            identifiant = st.text_input("Identifiant *", value="admin", placeholder="ex: admin")
-            mot_de_passe = st.text_input("Mot de passe *", type="password", value="1234567", placeholder="••••••••")
+        if submit:
+            if identifiant and mot_de_passe:
+                st.session_state['authentifie'] = True
+                st.session_state['username'] = identifiant
+                st.rerun()
+            else:
+                st.error("Merci de renseigner votre identifiant et votre mot de passe.")
 
-            submit = st.form_submit_button("Connecter")
-
-            if submit:
-                if identifiant and mot_de_passe:
-                    st.session_state['authentifie'] = True
-                    st.session_state['username'] = identifiant
-                    st.rerun()
-                else:
-                    st.error("Merci de renseigner votre identifiant et votre mot de passe.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Fonction de Simulation en temps réel
@@ -241,7 +276,7 @@ def page_dashboard():
     <style>
         .stApp { background-image: none !important; background-color: #f4f6f9 !important; }
         
-        /* Sidebar étroite (~2cm / 85px) avec fond vert/sombre */
+        /* Sidebar étroite (~2cm / 85px) avec fond vert OCP */
         section[data-testid="stSidebar"] {
             background-color: #007A33 !important;
             width: 85px !important;
@@ -253,7 +288,7 @@ def page_dashboard():
     </style>
     """, unsafe_allow_html=True)
 
-    # --- Barre supérieure compacte (~2 cm de hauteur) ---
+    # --- Barre supérieure compacte (~2 cm de hauteur) avec Logo OCP, username et déconnexion ---
     col_nav_logo, col_nav_user = st.columns([2, 2])
     
     with col_nav_logo:
