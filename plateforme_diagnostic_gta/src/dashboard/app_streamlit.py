@@ -73,34 +73,41 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Scrollable + Animation Loader)
+# 4. PAGE DE CONNEXION (Animation Rideau + Fleur)
 # ================================================================
 
 def page_login():
     bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
-    # ÉCRAN DE CHARGEMENT AVEC ANIMATION DE LA FLEUR OCP (Version réduite et rapide)
+    # ÉCRAN DE CHARGEMENT AVEC ANIMATION DES RIDEAUX ET DE LA FLEUR
     loader_html = ""
     if st.session_state["premiere_visite"]:
-        loader_html = """
+        loader_html = f"""
         <div id="loader-wrapper">
-            <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- Tige -->
-                <path d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="transparent" />
-                <!-- Pétale centrale (Pousse en haut) -->
-                <path class="leaf petal1" fill="#00a651" d="M50 50 C 30 30 40 10 50 10 C 60 10 70 30 50 50 Z" />
-                <!-- Pétale gauche -->
-                <path class="leaf petal2" fill="#007A33" d="M50 50 C 20 40 10 60 10 80 C 30 90 40 70 50 50 Z" />
-                <!-- Pétale droite -->
-                <path class="leaf petal3" fill="#00a651" d="M50 50 C 80 40 90 60 90 80 C 70 90 60 70 50 50 Z" />
-            </svg>
+            <!-- Les deux moitiés du rideau -->
+            <div class="half top-half"></div>
+            <div class="half bottom-half"></div>
+            
+            <!-- Le conteneur de la fleur -->
+            <div class="flower-container">
+                <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Tige animée -->
+                    <path class="stem" d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="transparent" stroke-linecap="round" />
+                    <!-- Pétale centrale (Pousse en haut) -->
+                    <path class="leaf petal1" fill="#00a651" d="M50 50 C 30 30 40 10 50 10 C 60 10 70 30 50 50 Z" />
+                    <!-- Pétale gauche -->
+                    <path class="leaf petal2" fill="#007A33" d="M50 50 C 20 40 10 60 10 80 C 30 90 40 70 50 50 Z" />
+                    <!-- Pétale droite -->
+                    <path class="leaf petal3" fill="#00a651" d="M50 50 C 80 40 90 60 90 80 C 70 90 60 70 50 50 Z" />
+                </svg>
+            </div>
         </div>
         """
         # On passe à False pour que l'animation ne se joue qu'une seule fois
         st.session_state["premiere_visite"] = False
 
-    # Application du fond
+    # Fond de l'application (derrière le rideau)
     if bg_b64:
         bg_css = f"""
         .stApp {{
@@ -112,16 +119,34 @@ def page_login():
             background-attachment: fixed !important;
             overflow-y: auto !important; /* Permet le défilement haut/bas */
         }}
+
+        /* Les moitiés utilisent le même fond mais assombri pour créer le rideau */
+        .half {{
+            position: absolute;
+            left: 0;
+            width: 100vw;
+            height: 50vh;
+            background: linear-gradient(rgba(5, 10, 8, 0.9), rgba(5, 10, 8, 0.95)), 
+                        url('data:image/jpg;base64,{bg_b64}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            z-index: 10;
+        }}
         """
     else:
         bg_css = """
         .stApp {{
             background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)) !important;
-            overflow-y: auto !important; /* Permet le défilement haut/bas */
+            overflow-y: auto !important;
+        }}
+        .half {{
+            position: absolute; left: 0; width: 100vw; height: 50vh;
+            background: #111; z-index: 10;
         }}
         """
 
-    # Injection HTML et CSS combinés
+    # Injection HTML et CSS
     st.markdown(
         f"""
         {loader_html}
@@ -131,39 +156,66 @@ def page_login():
         html, body, [class*="css"] {{ font-family: 'Poppins', sans-serif; }}
         #MainMenu, header, footer {{ visibility: hidden; }}
         
-        /* Masquer la barre latérale sur la page de connexion */
         [data-testid="stSidebar"] {{ display: none !important; }}
         [data-testid="collapsedControl"] {{ display: none !important; }}
 
-        /* Injection de l'image de fond et de la possibilité de scroll */
+        /* Injection du fond dynamique */
         {bg_css}
 
-        /* --- CSS DE L'ÉCRAN DE CHARGEMENT (Nouveau fond premium & rapide) --- */
+        /* --- CSS DE L'ÉCRAN DE CHARGEMENT --- */
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            /* Fond sombre translucide avec effet verre dépoli */
-            background: rgba(15, 25, 20, 0.95);
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
             z-index: 999999;
             display: flex; justify-content: center; align-items: center;
-            /* Animation très courte : Reste 1.5s puis disparaît en 0.5s */
-            animation: fadeOutLoader 0.5s ease-in-out 1.5s forwards; 
+            animation: fadeOutLoader 0.6s ease-in-out 3.2s forwards;
+            pointer-events: none;
         }}
         
-        /* Petite taille pour faire "pro" */
+        /* Animations des moitiés (Rideau) */
+        .top-half {{
+            top: 0;
+            transform: translateY(-100%);
+            animation: slideInTop 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+        }}
+        .bottom-half {{
+            bottom: 0;
+            transform: translateY(100%);
+            animation: slideInBottom 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+        }}
+        @keyframes slideInTop {{ to {{ transform: translateY(0); }} }}
+        @keyframes slideInBottom {{ to {{ transform: translateY(0); }} }}
+
+        /* Conteneur de la fleur (Apparaît quand le rideau se ferme) */
+        .flower-container {{
+            position: relative;
+            z-index: 20;
+            opacity: 0;
+            animation: showFlower 0.1s ease-out 0.6s forwards;
+        }}
+        @keyframes showFlower {{ to {{ opacity: 1; }} }}
+        
         .flower-svg {{ width: 65px; height: 65px; transform-origin: bottom center; }}
         
-        /* Vitesse d'apparition des feuilles accélérée */
-        .petal1 {{ animation: growPetal 0.5s ease-out 0.1s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
-        .petal2 {{ animation: growPetal 0.5s ease-out 0.3s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
-        .petal3 {{ animation: growPetal 0.5s ease-out 0.5s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        /* Animation de la tige */
+        .stem {{
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: drawStem 0.5s ease-out 0.7s forwards;
+        }}
+        @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
+
+        /* Animation des pétales */
+        .petal1 {{ animation: growPetal 0.5s ease-out 1.2s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal2 {{ animation: growPetal 0.5s ease-out 1.4s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal3 {{ animation: growPetal 0.5s ease-out 1.6s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
         
         @keyframes growPetal {{
             0% {{ transform: scale(0) translateY(10px); opacity: 0; }}
             70% {{ transform: scale(1.1) translateY(0); opacity: 1; }}
             100% {{ transform: scale(1) translateY(0); opacity: 1; }}
         }}
+        
+        /* Disparition globale du loader */
         @keyframes fadeOutLoader {{
             100% {{ opacity: 0; visibility: hidden; display: none; }}
         }}
@@ -177,7 +229,7 @@ def page_login():
         /* --- CENTRAGE ET RÉDUCTION DE LA CARTE --- */
         .block-container {{
             padding-top: 15vh !important;
-            padding-bottom: 15vh !important; /* Ajoute de l'espace en bas pour scroller */
+            padding-bottom: 15vh !important;
             max-width: 750px !important;
         }}
 
