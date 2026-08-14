@@ -73,7 +73,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Animation Rideau + Fleur Synchronisée)
+# 4. PAGE DE CONNEXION (Animation Stabilisée)
 # ================================================================
 
 def page_login():
@@ -81,22 +81,15 @@ def page_login():
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
     loader_html = ""
-    # Si ce n'est pas la première visite, la carte s'affiche instantanément sans animation
-    animation_carte_css = """
-        div[data-testid="stHorizontalBlock"] {
-            opacity: 1 !important;
-        }
-    """
+    animation_carte_css = ""
 
-    # Si c'est la première visite : Séquence d'animation complète de 5 secondes
+    # L'animation complète ne se joue qu'à la première ouverture
     if st.session_state["premiere_visite"]:
         loader_html = """
         <div id="loader-wrapper">
-            <!-- Les deux moitiés du rideau -->
             <div class="half top-half"></div>
             <div class="half bottom-half"></div>
             
-            <!-- Le conteneur de la fleur -->
             <div class="flower-container">
                 <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path class="stem" d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="none" stroke-linecap="round" />
@@ -107,17 +100,23 @@ def page_login():
             </div>
         </div>
         """
-        # La carte reste invisible pendant 4.6 secondes, puis s'affiche doucement
         animation_carte_css = """
         div[data-testid="stHorizontalBlock"] {
             opacity: 0;
-            animation: revealCard 1s ease-in-out 4.6s forwards !important;
+            animation: revealCard 1s ease-in-out 4.5s forwards !important;
         }
         @keyframes revealCard { to { opacity: 1; } }
         """
         st.session_state["premiere_visite"] = False
+    else:
+        # Si on a déjà vu l'animation (ex: quand on tape le mot de passe), la carte est 100% visible
+        animation_carte_css = """
+        div[data-testid="stHorizontalBlock"] {
+            opacity: 1 !important;
+        }
+        """
 
-    # Configuration des fonds
+    # Fond de l'application
     if bg_b64:
         bg_css = f"""
         .stApp {{
@@ -127,26 +126,20 @@ def page_login():
             background-position: center !important;
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
-            overflow-y: auto !important;
         }}
         .half {{
-            position: absolute; left: 0; width: 100vw; height: 50vh;
             background: linear-gradient(rgba(10, 18, 14, 0.95), rgba(10, 18, 14, 0.98)), 
                         url('data:image/jpg;base64,{bg_b64}');
             background-size: cover; background-position: center; background-attachment: fixed;
-            z-index: 10;
         }}
         """
     else:
         bg_css = """
-        .stApp {{
-            background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)) !important;
-            overflow-y: auto !important;
-        }}
-        .half { position: absolute; left: 0; width: 100vw; height: 50vh; background: #111; z-index: 10; }
+        .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; }
+        .half { background: #111; }
         """
 
-    # Injection CSS & HTML
+    # Injection HTML et CSS
     st.markdown(
         f"""
         {loader_html}
@@ -155,93 +148,70 @@ def page_login():
 
         html, body, [class*="css"] {{ font-family: 'Poppins', sans-serif; }}
         #MainMenu, header, footer {{ visibility: hidden; }}
-        [data-testid="stSidebar"] {{ display: none !important; }}
-        [data-testid="collapsedControl"] {{ display: none !important; }}
+        [data-testid="stSidebar"], [data-testid="collapsedControl"] {{ display: none !important; }}
 
-        /* Injection du fond dynamique */
         {bg_css}
 
-        /* --- SÉQUENCE D'ANIMATION (RIDEAU + FLEUR) --- */
+        /* --- SÉQUENCE D'ANIMATION --- */
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 999999;
-            display: flex; justify-content: center; align-items: center;
-            pointer-events: none;
-            animation: destroyLoader 0.1s forwards 5s; /* Disparition définitive après 5s */
+            z-index: 999999; display: flex; justify-content: center; align-items: center;
+            pointer-events: none; /* Empêche le loader de bloquer les clics */
+            animation: destroyLoader 4.8s forwards;
         }}
-        @keyframes destroyLoader {{ to {{ opacity: 0; visibility: hidden; display: none; z-index: -1; }} }}
+        @keyframes destroyLoader {{
+            99% {{ opacity: 1; z-index: 999999; visibility: visible; }}
+            100% {{ opacity: 0; z-index: -1; visibility: hidden; display: none; }}
+        }}
         
-        /* 1. Les Rideaux (Se ferment à 0.6s, s'estompent à 4.6s) */
+        /* Les Rideaux */
+        .half {{ position: absolute; left: 0; width: 100vw; height: 50vh; z-index: 10; }}
         .top-half {{
             top: 0; transform: translateY(-100%);
-            animation: curtainT 5s forwards;
+            animation: slideInTop 0.6s ease-out forwards, fadeOutHalf 0.5s ease-in 4.2s forwards;
         }}
         .bottom-half {{
             bottom: 0; transform: translateY(100%);
-            animation: curtainB 5s forwards;
+            animation: slideInBottom 0.6s ease-out forwards, fadeOutHalf 0.5s ease-in 4.2s forwards;
         }}
-        @keyframes curtainT {{
-            0% {{ transform: translateY(-100%); opacity: 1; }}
-            12% {{ transform: translateY(0); opacity: 1; }}    /* 0.6s - Fermé */
-            85% {{ transform: translateY(0); opacity: 1; }}    /* 4.25s - Début fondu */
-            100% {{ transform: translateY(0); opacity: 0; }}   /* 5.0s - Disparu */
-        }}
-        @keyframes curtainB {{
-            0% {{ transform: translateY(100%); opacity: 1; }}
-            12% {{ transform: translateY(0); opacity: 1; }}
-            85% {{ transform: translateY(0); opacity: 1; }}
-            100% {{ transform: translateY(0); opacity: 0; }}
-        }}
+        @keyframes slideInTop {{ to {{ transform: translateY(0); }} }}
+        @keyframes slideInBottom {{ to {{ transform: translateY(0); }} }}
+        @keyframes fadeOutHalf {{ to {{ opacity: 0; }} }}
 
-        /* 2. Le Conteneur de la Fleur (Sécurisé pour tous navigateurs) */
+        /* La Fleur */
         .flower-container {{
-            position: absolute; z-index: 20; opacity: 0;
-            animation: flowerVis 5s forwards;
+            position: relative; z-index: 20; opacity: 0;
+            animation: flowerVis 4.5s forwards;
         }}
         @keyframes flowerVis {{
-            0% {{ opacity: 0; transform: scale(0.5); }}
-            12% {{ opacity: 0; transform: scale(0.8); }} /* 0.6s */
-            15% {{ opacity: 1; transform: scale(1); }}   /* 0.75s */
-            85% {{ opacity: 1; transform: scale(1); }}   /* 4.25s */
-            100% {{ opacity: 0; transform: scale(1.2); }} /* 5.0s */
+            0%, 10% {{ opacity: 0; transform: scale(0.5); }}
+            15%, 85% {{ opacity: 1; transform: scale(1); }}
+            95%, 100% {{ opacity: 0; transform: scale(1.2); }}
         }}
         
         .flower-svg {{ width: 85px; height: 85px; }}
         
-        /* 3. L'éclosion de la fleur (Tige puis pétales) */
-        .stem {{
-            stroke-dasharray: 100; stroke-dashoffset: 100;
-            animation: drawStem 1s ease-out 0.6s forwards;
-        }}
+        /* Tige et Pétales */
+        .stem {{ stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawStem 0.8s ease-out 0.6s forwards; }}
         @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
 
-        .petal1 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.2s forwards; }}
-        .petal2 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.7s forwards; }}
-        .petal3 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 2.2s forwards; }}
+        .petal1 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.6s ease-out 1.2s forwards; }}
+        .petal2 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.6s ease-out 1.6s forwards; }}
+        .petal3 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.6s ease-out 2.0s forwards; }}
         
         @keyframes popPetal {{
-            0% {{ transform: scale(0) translateY(15px); opacity: 0; }}
+            0% {{ transform: scale(0) translateY(10px); opacity: 0; }}
             70% {{ transform: scale(1.1) translateY(0); opacity: 1; }}
             100% {{ transform: scale(1) translateY(0); opacity: 1; }}
         }}
 
-        /* --- VISIBILITÉ DE LA CARTE DE CONNEXION --- */
+        /* --- CARTE DE CONNEXION --- */
         {animation_carte_css}
 
-        /* --- MASQUER "Press Enter to submit form" --- */
-        div[data-testid="stFormSubmitInstructions"], 
-        div[data-testid="InputInstructions"] {{
-            display: none !important;
-        }}
+        div[data-testid="stFormSubmitInstructions"], div[data-testid="InputInstructions"] {{ display: none !important; }}
 
-        /* --- CENTRAGE ET RÉDUCTION DE LA CARTE --- */
-        .block-container {{
-            padding-top: 15vh !important;
-            padding-bottom: 15vh !important;
-            max-width: 750px !important;
-        }}
+        .block-container {{ padding-top: 15vh !important; padding-bottom: 15vh !important; max-width: 750px !important; }}
 
-        /* --- LA CARTE BLANCHE --- */
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
             border-radius: 20px !important;
@@ -250,50 +220,17 @@ def page_login():
             align-items: center !important;
         }}
 
-        /* --- STYLE DU FORMULAIRE ET DES CHAMPS --- */
-        div[data-testid="stForm"] {{
-            border: none !important;
-            padding: 0 !important;
-            background: transparent !important;
-        }}
+        div[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; }}
+        div[data-testid="stTextInput"] label p {{ color: #007A33 !important; font-weight: 600 !important; font-size: 13px !important; }}
+        div[data-testid="stTextInput"] input {{ background-color: #f4f6f9 !important; border: 1px solid #e1e8ed !important; border-radius: 8px !important; padding: 10px 14px !important; font-size: 14px !important; color: #333 !important; }}
+        div[data-testid="stTextInput"] input:focus {{ border-color: #007A33 !important; box-shadow: 0 0 0 1px #007A33 !important; }}
 
-        div[data-testid="stTextInput"] label p {{
-            color: #007A33 !important;
-            font-weight: 600 !important;
-            font-size: 13px !important;
-        }}
-
-        div[data-testid="stTextInput"] input {{
-            background-color: #f4f6f9 !important;
-            border: 1px solid #e1e8ed !important;
-            border-radius: 8px !important;
-            padding: 10px 14px !important;
-            font-size: 14px !important;
-            color: #333 !important;
-        }}
-
-        div[data-testid="stTextInput"] input:focus {{
-            border-color: #007A33 !important;
-            box-shadow: 0 0 0 1px #007A33 !important;
-        }}
-
-        /* --- BOUTON CONNECTER --- */
         div[data-testid="stFormSubmitButton"] button {{
-            background-color: #007A33 !important;
-            color: white !important;
-            border-radius: 30px !important;
-            font-weight: 600 !important;
-            font-size: 15px !important;
-            padding: 8px 24px !important;
-            width: 100% !important;
-            border: none !important;
-            margin-top: 15px !important;
-            transition: 0.3s ease !important;
+            background-color: #007A33 !important; color: white !important; border-radius: 30px !important;
+            font-weight: 600 !important; font-size: 15px !important; padding: 8px 24px !important; width: 100% !important;
+            border: none !important; margin-top: 15px !important; transition: 0.3s ease !important;
         }}
-        div[data-testid="stFormSubmitButton"] button:hover {{
-            background-color: #005f27 !important;
-            transform: translateY(-2px);
-        }}
+        div[data-testid="stFormSubmitButton"] button:hover {{ background-color: #005f27 !important; transform: translateY(-2px); }}
         </style>
         """,
         unsafe_allow_html=True
@@ -316,7 +253,6 @@ def page_login():
                 <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px;">
                     <div style="text-align: center; color: #007A33;">
                         <h1 style="font-size: 30px; margin: 0;">OCP</h1>
-                        <p style="font-weight: 600; letter-spacing: 1px; font-size: 10px;">GROUPE OCP</p>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -328,7 +264,6 @@ def page_login():
         with st.form("login_form"):
             username = st.text_input("Identifiant *", placeholder="Entrez votre identifiant")
             password = st.text_input("Mot de passe *", type="password", placeholder="Entrez votre mot de passe")
-            
             submit = st.form_submit_button("Connecter")
 
             if submit:
