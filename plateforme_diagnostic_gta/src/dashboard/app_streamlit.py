@@ -73,21 +73,21 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Scrollable + Animation Fleur)
+# 4. PAGE DE CONNEXION (Scrollable + Animation Loader)
 # ================================================================
 
 def page_login():
     bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
-    # ÉCRAN DE CHARGEMENT AVEC ANIMATION DE LA FLEUR OCP
+    # ÉCRAN DE CHARGEMENT AVEC ANIMATION DE LA FLEUR OCP (Version réduite et rapide)
     loader_html = ""
     if st.session_state["premiere_visite"]:
         loader_html = """
         <div id="loader-wrapper">
             <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <!-- Tige -->
-                <path d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="4" fill="transparent" />
+                <path d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="transparent" />
                 <!-- Pétale centrale (Pousse en haut) -->
                 <path class="leaf petal1" fill="#00a651" d="M50 50 C 30 30 40 10 50 10 C 60 10 70 30 50 50 Z" />
                 <!-- Pétale gauche -->
@@ -95,8 +95,6 @@ def page_login():
                 <!-- Pétale droite -->
                 <path class="leaf petal3" fill="#00a651" d="M50 50 C 80 40 90 60 90 80 C 70 90 60 70 50 50 Z" />
             </svg>
-            <h2 style="color: #007A33; font-family: 'Poppins', sans-serif; margin-top: 25px; font-weight: 700; letter-spacing: 1px;">GROUPE OCP</h2>
-            <p style="color: #666; font-family: 'Poppins', sans-serif; font-size: 14px;">Déploiement du portail industriel...</p>
         </div>
         """
         # On passe à False pour que l'animation ne se joue qu'une seule fois
@@ -140,17 +138,26 @@ def page_login():
         /* Injection de l'image de fond et de la possibilité de scroll */
         {bg_css}
 
-        /* --- CSS DE L'ÉCRAN DE CHARGEMENT --- */
+        /* --- CSS DE L'ÉCRAN DE CHARGEMENT (Nouveau fond premium & rapide) --- */
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #f4f6f5; z-index: 999999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            animation: fadeOutLoader 0.8s ease-in-out 3s forwards; /* Reste 3s puis disparaît */
+            /* Fond sombre translucide avec effet verre dépoli */
+            background: rgba(15, 25, 20, 0.95);
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
+            /* Animation très courte : Reste 1.5s puis disparaît en 0.5s */
+            animation: fadeOutLoader 0.5s ease-in-out 1.5s forwards; 
         }}
-        .flower-svg {{ width: 130px; height: 130px; transform-origin: bottom center; }}
-        .petal1 {{ animation: growPetal 1.2s ease-out 0.2s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
-        .petal2 {{ animation: growPetal 1.2s ease-out 0.5s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
-        .petal3 {{ animation: growPetal 1.2s ease-out 0.8s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        
+        /* Petite taille pour faire "pro" */
+        .flower-svg {{ width: 65px; height: 65px; transform-origin: bottom center; }}
+        
+        /* Vitesse d'apparition des feuilles accélérée */
+        .petal1 {{ animation: growPetal 0.5s ease-out 0.1s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal2 {{ animation: growPetal 0.5s ease-out 0.3s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal3 {{ animation: growPetal 0.5s ease-out 0.5s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
         
         @keyframes growPetal {{
             0% {{ transform: scale(0) translateY(10px); opacity: 0; }}
@@ -174,7 +181,7 @@ def page_login():
             max-width: 750px !important;
         }}
 
-        /* --- LA CARTE BLANCHE (Sans l'animation flottante) --- */
+        /* --- LA CARTE BLANCHE --- */
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
             border-radius: 20px !important;
