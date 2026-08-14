@@ -67,25 +67,24 @@ def trouver_fichier(noms_fichiers):
     return None
 
 CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vector.svg-.png"])
-CHEMIN_FOND = trouver_fichier(["OIP (1).jpg", "OIP.jpg"])
+CHEMIN_FOND = trouver_fichier(["OIP (1).jpg", "OIP.jpg"]) # Assurez-vous que le nom de votre nouvelle image est bien dans cette liste
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Correction Logo & Flou d'arrière-plan)
+# 4. PAGE DE CONNEXION (Sans effet de flou)
 # ================================================================
 
 def page_login():
     bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
-    # ASTUCE UI : Ajout d'une DIV d'arrière-plan fixe avec un effet de flou (blur)
-    # Cela masque la mauvaise qualité de l'image tout en créant un rendu très élégant.
+    # Image de fond nette avec un léger overlay sombre pour faire ressortir la carte
     if bg_b64:
         bg_html = f"""
-        <div style="position: fixed; top: -5%; left: -5%; width: 110%; height: 110%;
-                    background: linear-gradient(rgba(20, 30, 25, 0.6), rgba(10, 15, 10, 0.9)), 
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
                                 url('data:image/jpg;base64,{bg_b64}');
                     background-size: cover; background-position: center; 
-                    filter: blur(8px); z-index: -999;">
+                    z-index: -999;">
         </div>
         """
     else:
