@@ -72,7 +72,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Scroll vertical actif + Animation & Design pro)
+# 4. PAGE DE CONNEXION (Animation Fond Noirci + Suppression de la main)
 # ================================================================
 
 def page_login():
@@ -112,23 +112,23 @@ def page_login():
 
     if bg_b64:
         bg_css = f"""
-        html, body {{
-            height: 100%;
-            overflow-y: scroll !important; /* Force l'affichage de la barre de défilement verticale */
+        html, body, [data-testid="stAppViewContainer"], .main {{
+            overflow: auto !important;
+            height: auto !important;
         }}
         .stApp {{
             background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: 100% auto !important;
+            background-size: cover !important;
             background-position: center center !important;
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
-            min-height: 120vh; /* Permet d'avoir de l'espace pour scroller */
-            cursor: grab;
+            min-height: 150vh !important;
+            cursor: default !important; /* Suppression de la main (cursor grab/grabbing) */
         }}
-        .stApp:active {{ cursor: grabbing; }}
+        /* Animation avec l'image bien noircie tout en voyant subtilement les détails */
         #loader-wrapper {{
-            background: linear-gradient(rgba(10, 15, 12, 0.45), rgba(5, 10, 8, 0.65)), 
+            background: linear-gradient(rgba(5, 10, 8, 0.85), rgba(2, 5, 4, 0.92)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
             background-size: cover !important;
             background-position: center !important;
@@ -136,8 +136,8 @@ def page_login():
         """
     else:
         bg_css = """
-        html, body { height: 100%; overflow-y: scroll !important; }
-        .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; min-height: 120vh; }
+        html, body, [data-testid="stAppViewContainer"], .main { overflow: auto !important; height: auto !important; }
+        .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; min-height: 150vh !important; cursor: default !important; }
         #loader-wrapper { background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(5,5,5,0.98)) !important; }
         """
 
@@ -189,7 +189,7 @@ def page_login():
 
         div[data-testid="stFormSubmitInstructions"], div[data-testid="InputInstructions"] {{ display: none !important; }}
 
-        .block-container {{ padding-top: 15vh !important; padding-bottom: 15vh !important; max-width: 820px !important; }}
+        .block-container {{ padding-top: 15vh !important; padding-bottom: 25vh !important; max-width: 820px !important; }}
 
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.99) !important;
@@ -242,20 +242,8 @@ def page_login():
         document.addEventListener("DOMContentLoaded", function() {{
             const app = document.querySelector('.stApp');
             if (!app) return;
-            let scale = 100, posX = 50, posY = 50, isDragging = false, startX, startY;
-            app.addEventListener('mousedown', function(e) {{
-                if (e.target.closest('[data-testid="stHorizontalBlock"]')) return;
-                isDragging = true; startX = e.clientX; startY = e.clientY;
-            }});
-            window.addEventListener('mousemove', function(e) {{
-                if (!isDragging) return;
-                let dx = e.clientX - startX, dy = e.clientY - startY;
-                startX = e.clientX; startY = e.clientY;
-                posX = Math.max(0, Math.min(100, posX - dx * 0.05));
-                posY = Math.max(0, Math.min(100, posY - dy * 0.05));
-                app.style.backgroundPosition = `${{posX}}% ${{posY}}%`;
-            }});
-            window.addEventListener('mouseup', function() {{ isDragging = false; }});
+            let scale = 100, posX = 50, posY = 50;
+            // Suppression du glisser-déposer (isDragging) pour enlever la main de la souris
             app.addEventListener('wheel', function(e) {{
                 if (e.target.closest('[data-testid="stHorizontalBlock"]')) return;
                 e.preventDefault();
@@ -438,7 +426,7 @@ def dashboard_realtime():
             c4.metric("Perte Alternateur", f"{df.iloc[-1]['Perte_Alternateur']:.2f} %")
 
         elif page == "📈 Rendement":
-            st.title("📈 Évolution du Rendement")
+            st.title("📈 Évolution du Rendement</h2>")
             st.metric("Rendement actuel", f"{df.iloc[-1]['Rendement']:.2f} %")
             st.plotly_chart(graphique_ligne(df, "Temps", "Rendement", "Calcul du Rendement", "%", "%"), use_container_width=True)
 
