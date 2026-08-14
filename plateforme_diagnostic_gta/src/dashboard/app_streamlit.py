@@ -72,7 +72,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Zoom Molette & Déplacement Souris)
+# 4. PAGE DE CONNEXION (Design Équilibré & Professionnel)
 # ================================================================
 
 def page_login():
@@ -121,9 +121,7 @@ def page_login():
             background-attachment: fixed !important;
             cursor: grab;
         }}
-        .stApp:active {{
-            cursor: grabbing;
-        }}
+        .stApp:active {{ cursor: grabbing; }}
         #loader-wrapper {{
             background: linear-gradient(rgba(10, 15, 12, 0.45), rgba(5, 10, 8, 0.65)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
@@ -137,7 +135,6 @@ def page_login():
         #loader-wrapper { background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(5,5,5,0.98)) !important; }
         """
 
-    # Injection HTML, CSS et Script JavaScript pour le Pan/Zoom à la souris
     st.markdown(
         f"""
         {loader_html}
@@ -169,16 +166,12 @@ def page_login():
             0%, 85% {{ opacity: 1; transform: scale(1); }}
             100% {{ opacity: 0; transform: scale(1.1); }}
         }}
-        
         .flower-svg {{ width: 90px; height: 90px; }}
-        
         .stem {{ stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawStem 1s ease-out 0.3s forwards; }}
         @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
-
         .petal1 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.0s forwards; }}
         .petal2 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.8s forwards; }}
         .petal3 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 2.6s forwards; }}
-        
         @keyframes popPetal {{
             0% {{ transform: scale(0) translateY(15px); opacity: 0; }}
             70% {{ transform: scale(1.1) translateY(0); opacity: 1; }}
@@ -190,14 +183,26 @@ def page_login():
 
         div[data-testid="stFormSubmitInstructions"], div[data-testid="InputInstructions"] {{ display: none !important; }}
 
-        .block-container {{ padding-top: 15vh !important; padding-bottom: 15vh !important; max-width: 750px !important; }}
+        .block-container {{ padding-top: 15vh !important; padding-bottom: 15vh !important; max-width: 820px !important; }}
 
         div[data-testid="stHorizontalBlock"] {{
-            background-color: rgba(255, 255, 255, 0.98) !important;
-            border-radius: 20px !important;
-            padding: 40px 30px !important;
-            box-shadow: 0px 15px 50px rgba(0,0,0,0.7) !important;
+            background-color: rgba(255, 255, 255, 0.99) !important;
+            border-radius: 24px !important;
+            padding: 45px 35px !important;
+            box-shadow: 0px 20px 60px rgba(0,0,0,0.6) !important;
             align-items: center !important;
+        }}
+
+        /* --- STYLE PROFESSIONNEL DE LA COLONNE LOGO --- */
+        /* Cible la première colonne (Logo) pour lui donner un fond subtil et chic */
+        div[data-testid="stHorizontalBlock"] > div:nth-child(1) {{
+            background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+            border-radius: 16px;
+            padding: 30px 15px;
+            border: 1px solid #edf0f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }}
 
         div[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; }}
@@ -221,61 +226,35 @@ def page_login():
         /* --- BOUTON CONNECTER --- */
         div[data-testid="stFormSubmitButton"] button {{
             background-color: #007A33 !important; color: white !important; border-radius: 30px !important;
-            font-weight: 600 !important; font-size: 15px !important; padding: 8px 24px !important; width: 100% !important;
+            font-weight: 600 !important; font-size: 15px !important; padding: 10px 24px !important; width: 100% !important;
             border: none !important; margin-top: 15px !important; transition: 0.3s ease !important;
+            box-shadow: 0 4px 12px rgba(0, 122, 51, 0.3);
         }}
         div[data-testid="stFormSubmitButton"] button:hover {{ background-color: #005f27 !important; transform: translateY(-2px); }}
         </style>
 
         <script>
-        // Script interactif pour Zoom (Molette) et Pan (Glisser-déposer avec la souris)
         document.addEventListener("DOMContentLoaded", function() {{
             const app = document.querySelector('.stApp');
             if (!app) return;
-
-            let scale = 100; // Zoom en %
-            let posX = 50;   // Position X en %
-            let posY = 50;   // Position Y en %
-            let isDragging = false;
-            let startX, startY;
-
+            let scale = 100, posX = 50, posY = 50, isDragging = false, startX, startY;
             app.addEventListener('mousedown', function(e) {{
-                // Ne s'active pas si on clique sur la carte blanche ou un champ
                 if (e.target.closest('[data-testid="stHorizontalBlock"]')) return;
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
+                isDragging = true; startX = e.clientX; startY = e.clientY;
             }});
-
             window.addEventListener('mousemove', function(e) {{
                 if (!isDragging) return;
-                let dx = e.clientX - startX;
-                let dy = e.clientY - startY;
-                startX = e.clientX;
-                startY = e.clientY;
-
-                posX -= dx * 0.05;
-                posY -= dy * 0.05;
-                
-                // Limites
-                posX = Math.max(0, Math.min(100, posX));
-                posY = Math.max(0, Math.min(100, posY));
-
+                let dx = e.clientX - startX, dy = e.clientY - startY;
+                startX = e.clientX; startY = e.clientY;
+                posX = Math.max(0, Math.min(100, posX - dx * 0.05));
+                posY = Math.max(0, Math.min(100, posY - dy * 0.05));
                 app.style.backgroundPosition = `${{posX}}% ${{posY}}%`;
             }});
-
-            window.addEventListener('mouseup', function() {{
-                isDragging = false;
-            }});
-
+            window.addEventListener('mouseup', function() {{ isDragging = false; }});
             app.addEventListener('wheel', function(e) {{
                 if (e.target.closest('[data-testid="stHorizontalBlock"]')) return;
                 e.preventDefault();
-                if (e.deltaY < 0) {{
-                    scale = Math.min(300, scale + 10); // Zoom In
-                }} else {{
-                    scale = Math.max(50, scale - 10);  // Zoom Out
-                }}
+                scale = e.deltaY < 0 ? Math.min(300, scale + 10) : Math.max(50, scale - 10);
                 app.style.backgroundSize = `${{scale}}% auto`;
             }}, {{ passive: false }});
         }});
@@ -284,21 +263,22 @@ def page_login():
         unsafe_allow_html=True
     )
 
-    col_logo, col_form = st.columns([1, 1.3], gap="medium")
+    # Rééquilibrage des colonnes : [0.9, 1.2] pour structurer l'espace du logo
+    col_logo, col_form = st.columns([0.9, 1.2], gap="large")
 
     with col_logo:
         if logo_b64:
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px; width: 100%;">
-                    <img src="data:image/jpg;base64,{logo_b64}" style="width: 90px; height: auto; display: block;" alt="Logo OCP" />
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                    <img src="data:image/jpg;base64,{logo_b64}" style="width: 130px; height: auto; display: block;" alt="Logo OCP" />
                 </div>
                 """,
                 unsafe_allow_html=True
             )
         else:
             st.markdown("""
-                <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px;">
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
                     <div style="text-align: center; color: #007A33;">
                         <h1 style="font-size: 30px; margin: 0;">OCP</h1>
                     </div>
