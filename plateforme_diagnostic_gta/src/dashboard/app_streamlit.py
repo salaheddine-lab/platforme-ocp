@@ -72,7 +72,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Design Équilibré & Professionnel)
+# 4. PAGE DE CONNEXION (Scroll vertical actif + Animation & Design pro)
 # ================================================================
 
 def page_login():
@@ -112,6 +112,10 @@ def page_login():
 
     if bg_b64:
         bg_css = f"""
+        html, body {{
+            height: 100%;
+            overflow-y: scroll !important; /* Force l'affichage de la barre de défilement verticale */
+        }}
         .stApp {{
             background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
@@ -119,6 +123,7 @@ def page_login():
             background-position: center center !important;
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
+            min-height: 120vh; /* Permet d'avoir de l'espace pour scroller */
             cursor: grab;
         }}
         .stApp:active {{ cursor: grabbing; }}
@@ -131,7 +136,8 @@ def page_login():
         """
     else:
         bg_css = """
-        .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; }
+        html, body { height: 100%; overflow-y: scroll !important; }
+        .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; min-height: 120vh; }
         #loader-wrapper { background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(5,5,5,0.98)) !important; }
         """
 
@@ -194,7 +200,6 @@ def page_login():
         }}
 
         /* --- STYLE PROFESSIONNEL DE LA COLONNE LOGO --- */
-        /* Cible la première colonne (Logo) pour lui donner un fond subtil et chic */
         div[data-testid="stHorizontalBlock"] > div:nth-child(1) {{
             background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
             border-radius: 16px;
@@ -263,7 +268,6 @@ def page_login():
         unsafe_allow_html=True
     )
 
-    # Rééquilibrage des colonnes : [0.9, 1.2] pour structurer l'espace du logo
     col_logo, col_form = st.columns([0.9, 1.2], gap="large")
 
     with col_logo:
