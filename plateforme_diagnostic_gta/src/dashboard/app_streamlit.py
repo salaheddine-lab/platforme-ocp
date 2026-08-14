@@ -3,11 +3,11 @@
 # Monitoring industriel d'un Groupe Turbo-Alternateur
 # ================================================================
 #
-# Installation :
+# Installation des dépendances :
 # pip install streamlit pandas numpy plotly
 #
-# Lancement :
-# streamlit run dashboard_gta.py
+# Lancement de l'application :
+# streamlit run app_streamlit.py
 #
 # Identifiants de démonstration :
 # Identifiant : admin
@@ -23,11 +23,11 @@ import time
 
 
 # ================================================================
-# 1. CONFIGURATION GLOBALE
+# 1. CONFIGURATION GLOBALE DE LA PAGE
 # ================================================================
 
 st.set_page_config(
-    page_title="Dashboard GTA",
+    page_title="Dashboard GTA | OCP",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -35,7 +35,7 @@ st.set_page_config(
 
 
 # ================================================================
-# 2. SESSION STATE
+# 2. GESTION DE L'ÉTAT DE SESSION (SESSION STATE)
 # ================================================================
 
 if "authentifie" not in st.session_state:
@@ -49,7 +49,7 @@ if "historique" not in st.session_state:
 
 
 # ================================================================
-# 3. CSS GLOBAL
+# 3. CSS GLOBAL (Design UI/UX Professionnel & Police Poppins)
 # ================================================================
 
 st.markdown(
@@ -57,7 +57,7 @@ st.markdown(
     <style>
 
     /* ============================================================
-       POLICE
+       TYPOGRAPHIE
        ============================================================ */
 
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -70,16 +70,12 @@ st.markdown(
         font-family: 'Poppins', sans-serif;
     }
 
-    /* ============================================================
-       BACKGROUND GENERAL
-       ============================================================ */
-
     .stApp {
         background: #f4f6f5;
     }
 
     /* ============================================================
-       SIDEBAR
+       SIDEBAR (Étroite ~85px, style vert OCP)
        ============================================================ */
 
     section[data-testid="stSidebar"] {
@@ -104,8 +100,6 @@ st.markdown(
     section[data-testid="stSidebar"] * {
         color: white !important;
     }
-
-    /* Radio buttons */
 
     section[data-testid="stSidebar"] div[role="radiogroup"] {
         gap: 8px;
@@ -144,19 +138,13 @@ st.markdown(
 
     .topbar {
         height: 72px;
-
         background: white;
-
         border-radius: 0 0 16px 16px;
-
         padding: 0 25px;
-
         display: flex;
         align-items: center;
         justify-content: space-between;
-
         box-shadow: 0 3px 15px rgba(0,0,0,0.07);
-
         margin-bottom: 22px;
     }
 
@@ -169,23 +157,14 @@ st.markdown(
     .ocp-symbol {
         width: 39px;
         height: 39px;
-
         border-radius: 50%;
-
-        background: linear-gradient(
-            135deg,
-            #00a651,
-            #007A33
-        );
-
+        background: linear-gradient(135deg, #00a651, #007A33);
         display: flex;
         align-items: center;
         justify-content: center;
-
         color: white;
         font-size: 19px;
         font-weight: 700;
-
         box-shadow: 0 3px 8px rgba(0,122,51,0.25);
     }
 
@@ -196,14 +175,8 @@ st.markdown(
         color: #006b2d;
     }
 
-    .top-user {
-        color: #444;
-        font-size: 14px;
-        font-weight: 500;
-    }
-
     /* ============================================================
-       TITRES
+       TITRES & CARTES
        ============================================================ */
 
     .page-title {
@@ -218,10 +191,6 @@ st.markdown(
         font-size: 13px;
         margin-bottom: 25px;
     }
-
-    /* ============================================================
-       CARTES
-       ============================================================ */
 
     .dashboard-card {
         background: white;
@@ -270,20 +239,13 @@ st.markdown(
     }
 
     /* ============================================================
-       LOGIN
+       PAGE DE CONNEXION (Pixel-Perfect)
        ============================================================ */
 
     .login-page {
         position: fixed;
         inset: 0;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(58,58,58,0.97),
-                rgba(16,16,16,0.99)
-            );
-
+        background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99));
         overflow: hidden;
     }
 
@@ -291,25 +253,14 @@ st.markdown(
         content: "";
         position: absolute;
         inset: -50%;
-
-        background:
-            repeating-linear-gradient(
-                135deg,
-                transparent 0px,
-                transparent 80px,
-                rgba(255,255,255,0.025) 81px,
-                transparent 82px
-            );
-
+        background: repeating-linear-gradient(135deg, transparent 0px, transparent 80px, rgba(255,255,255,0.025) 81px, transparent 82px);
         transform: rotate(-5deg);
     }
 
     .login-container {
         position: relative;
         z-index: 2;
-
         min-height: 88vh;
-
         display: flex;
         align-items: center;
         justify-content: center;
@@ -318,33 +269,19 @@ st.markdown(
     .login-card {
         width: 850px;
         min-height: 450px;
-
         background: white;
-
         border-radius: 22px;
-
-        box-shadow:
-            0 30px 80px rgba(0,0,0,0.45);
-
+        box-shadow: 0 30px 80px rgba(0,0,0,0.45);
         overflow: hidden;
-
         display: flex;
     }
 
     .login-left {
         width: 42%;
-
-        background:
-            linear-gradient(
-                145deg,
-                #f7faf8,
-                #eef4f0
-            );
-
+        background: linear-gradient(145deg, #f7faf8, #eef4f0);
         display: flex;
         align-items: center;
         justify-content: center;
-
         text-align: center;
     }
 
@@ -365,22 +302,12 @@ st.markdown(
     .logo-big-o {
         width: 67px;
         height: 67px;
-
         border-radius: 50%;
-
-        background:
-            linear-gradient(
-                135deg,
-                #00a651,
-                #007A33
-            );
-
+        background: linear-gradient(135deg, #00a651, #007A33);
         color: white;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
         margin-right: 4px;
     }
 
@@ -419,7 +346,7 @@ st.markdown(
     }
 
     /* ============================================================
-       BOUTONS
+       BOUTONS & METRICS
        ============================================================ */
 
     div.stButton > button {
@@ -438,10 +365,6 @@ st.markdown(
         transform: translateY(-1px);
     }
 
-    /* ============================================================
-       METRICS
-       ============================================================ */
-
     div[data-testid="stMetric"] {
         background: white;
         padding: 16px;
@@ -453,10 +376,6 @@ st.markdown(
     div[data-testid="stMetricLabel"] {
         color: #747b77;
     }
-
-    /* ============================================================
-       FOOTER
-       ============================================================ */
 
     .footer {
         text-align: center;
@@ -473,11 +392,10 @@ st.markdown(
 
 
 # ================================================================
-# 4. LOGO OCP
+# 4. COMPOSANT LOGO OCP
 # ================================================================
 
 def ocp_logo():
-
     return """
     <div class="top-logo">
         <div class="ocp-symbol">O</div>
@@ -487,122 +405,54 @@ def ocp_logo():
 
 
 # ================================================================
-# 5. SIMULATION DES DONNÉES GTA
+# 5. SIMULATION DES DONNÉES INDUSTRIELLES GTA
 # ================================================================
 
 def generer_donnees_gta(n=60):
-
-    # Générateur aléatoire reproductible par session
     rng = np.random.default_rng()
-
-    # Temps
     maintenant = pd.Timestamp.now()
 
-    temps = pd.date_range(
-        end=maintenant,
-        periods=n,
-        freq="min"
-    )
+    temps = pd.date_range(end=maintenant, periods=n, freq="min")
 
-    # ------------------------------------------------------------
-    # Rendement GTA
-    # ------------------------------------------------------------
-
+    # Rendement GTA (%)
     rendement = (
         0.82
         + 0.015 * np.sin(np.linspace(0, 4*np.pi, n))
         + rng.normal(0, 0.004, n)
     )
-
     rendement = np.clip(rendement, 0.72, 0.90)
 
-    # ------------------------------------------------------------
-    # Résistance thermique condenseur
-    # ------------------------------------------------------------
-
+    # Résistance thermique condenseur (K/W)
     resistance = (
         0.00042
         + np.linspace(0, 0.00010, n)
         + 0.000015 * np.sin(np.linspace(0, 3*np.pi, n))
         + rng.normal(0, 0.000006, n)
     )
-
     resistance = np.clip(resistance, 0.00030, 0.00070)
 
-    # ------------------------------------------------------------
-    # Perte turbine
-    # ------------------------------------------------------------
-
+    # Perte turbine (%)
     perte_turbine = (
         6.2
         + 0.6 * np.sin(np.linspace(0, 3*np.pi, n))
         + rng.normal(0, 0.20, n)
     )
-
     perte_turbine = np.clip(perte_turbine, 4.0, 10.0)
 
-    # ------------------------------------------------------------
-    # Perte alternateur
-    # ------------------------------------------------------------
-
+    # Perte alternateur (%)
     perte_alternateur = (
         3.8
         + 0.4 * np.sin(np.linspace(0, 4*np.pi, n))
         + rng.normal(0, 0.15, n)
     )
+    perte_alternateur = np.clip(perte_alternateur, 2.5, 7.0)
 
-    perte_alternateur = np.clip(
-        perte_alternateur,
-        2.5,
-        7.0
-    )
-
-    # ------------------------------------------------------------
-    # Températures
-    # ------------------------------------------------------------
-
-    temperature_vapeur = (
-        515
-        + 5 * np.sin(np.linspace(0, 2*np.pi, n))
-        + rng.normal(0, 1.2, n)
-    )
-
-    temperature_condenseur = (
-        38
-        + 1.5 * np.sin(np.linspace(0, 3*np.pi, n))
-        + rng.normal(0, 0.5, n)
-    )
-
-    # ------------------------------------------------------------
-    # Pressions
-    # ------------------------------------------------------------
-
-    pression_entree = (
-        42
-        + 0.4 * np.sin(np.linspace(0, 2*np.pi, n))
-        + rng.normal(0, 0.08, n)
-    )
-
-    pression_sortie = (
-        0.09
-        + rng.normal(0, 0.002, n)
-    )
-
-    # ------------------------------------------------------------
-    # Puissances
-    # ------------------------------------------------------------
-
-    puissance_turbine = (
-        32
-        + 1.5 * np.sin(np.linspace(0, 2*np.pi, n))
-        + rng.normal(0, 0.3, n)
-    )
-
-    puissance_alternateur = (
-        29.5
-        + 1.3 * np.sin(np.linspace(0, 2*np.pi, n))
-        + rng.normal(0, 0.25, n)
-    )
+    temperature_vapeur = 515 + 5 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 1.2, n)
+    temperature_condenseur = 38 + 1.5 * np.sin(np.linspace(0, 3*np.pi, n)) + rng.normal(0, 0.5, n)
+    pression_entree = 42 + 0.4 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 0.08, n)
+    pression_sortie = 0.09 + rng.normal(0, 0.002, n)
+    puissance_turbine = 32 + 1.5 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 0.3, n)
+    puissance_alternateur = 29.5 + 1.3 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 0.25, n)
 
     df = pd.DataFrame({
         "Temps": temps,
@@ -622,18 +472,10 @@ def generer_donnees_gta(n=60):
 
 
 # ================================================================
-# 6. GRAPHIQUE PLOTLY
+# 6. GESTION DES GRAPHIQUES PLOTLY
 # ================================================================
 
-def graphique_ligne(
-    df,
-    x,
-    y,
-    titre,
-    nom_axe_y,
-    unite=""
-):
-
+def graphique_ligne(df, x, y, titre, nom_axe_y, unite=""):
     fig = go.Figure()
 
     fig.add_trace(
@@ -642,15 +484,8 @@ def graphique_ligne(
             y=df[y],
             mode="lines",
             name=y,
-            line=dict(
-                shape="spline",
-                width=3
-            ),
-            hovertemplate=(
-                "%{y:.3f}"
-                + f" {unite}"
-                + "<extra></extra>"
-            )
+            line=dict(shape="spline", width=3, color="#007A33"),
+            hovertemplate="%{y:.3f}" + f" {unite}<extra></extra>"
         )
     )
 
@@ -658,109 +493,48 @@ def graphique_ligne(
         title=titre,
         template="plotly_white",
         height=390,
-        margin=dict(
-            l=20,
-            r=20,
-            t=55,
-            b=20
-        ),
+        margin=dict(l=20, r=20, t=55, b=20),
         hovermode="x unified",
         xaxis_title="Temps",
         yaxis_title=nom_axe_y,
-        font=dict(
-            family="Poppins",
-            size=12
-        ),
-        legend=dict(
-            orientation="h",
-            y=1.1
-        )
+        font=dict(family="Poppins", size=12),
+        legend=dict(orientation="h", y=1.1)
     )
 
     return fig
 
 
 # ================================================================
-# 7. SYSTÈME D'ALERTES
+# 7. SYSTÈME D'ALERTES ET DIAGNOSTICS
 # ================================================================
 
 def analyser_alertes(df):
-
     dernier = df.iloc[-1]
-
     alertes = []
 
-    # Rendement
     if dernier["Rendement"] < 78:
-        alertes.append(
-            (
-                "danger",
-                "Rendement faible",
-                f"Le rendement actuel est de "
-                f"{dernier['Rendement']:.2f} %."
-            )
-        )
+        alertes.append(("danger", "Rendement faible", f"Le rendement actuel est de {dernier['Rendement']:.2f} %."))
     elif dernier["Rendement"] < 80:
-        alertes.append(
-            (
-                "warning",
-                "Rendement à surveiller",
-                f"Le rendement actuel est de "
-                f"{dernier['Rendement']:.2f} %."
-            )
-        )
+        alertes.append(("warning", "Rendement à surveiller", f"Le rendement actuel est de {dernier['Rendement']:.2f} %."))
 
-    # Encrassement
     if dernier["Resistance"] > 0.00055:
-        alertes.append(
-            (
-                "danger",
-                "Encrassement du condenseur",
-                f"Résistance thermique élevée : "
-                f"{dernier['Resistance']:.6f} K/W."
-            )
-        )
+        alertes.append(("danger", "Encrassement du condenseur", f"Résistance thermique élevée : {dernier['Resistance']:.6f} K/W."))
     elif dernier["Resistance"] > 0.00050:
-        alertes.append(
-            (
-                "warning",
-                "Encrassement à surveiller",
-                f"Résistance thermique : "
-                f"{dernier['Resistance']:.6f} K/W."
-            )
-        )
+        alertes.append(("warning", "Encrassement à surveiller", f"Résistance thermique : {dernier['Resistance']:.6f} K/W."))
 
-    # Turbine
     if dernier["Perte_Turbine"] > 8:
-        alertes.append(
-            (
-                "danger",
-                "Pertes turbine élevées",
-                f"Pertes estimées : "
-                f"{dernier['Perte_Turbine']:.2f} %."
-            )
-        )
+        alertes.append(("danger", "Pertes turbine élevées", f"Pertes estimées : {dernier['Perte_Turbine']:.2f} %."))
 
-    # Alternateur
     if dernier["Perte_Alternateur"] > 5:
-        alertes.append(
-            (
-                "danger",
-                "Pertes alternateur élevées",
-                f"Pertes estimées : "
-                f"{dernier['Perte_Alternateur']:.2f} %."
-            )
-        )
+        alertes.append(("danger", "Pertes alternateur élevées", f"Pertes estimées : {dernier['Perte_Alternateur']:.2f} %."))
 
     return alertes
 
 
 def afficher_alertes(df):
-
     alertes = analyser_alertes(df)
 
     if not alertes:
-
         st.markdown(
             """
             <div class="alert-normal">
@@ -770,19 +544,11 @@ def afficher_alertes(df):
             """,
             unsafe_allow_html=True
         )
-
         return
 
     for niveau, titre, message in alertes:
-
-        classe = (
-            "alert-danger"
-            if niveau == "danger"
-            else "alert-warning"
-        )
-
+        classe = "alert-danger" if niveau == "danger" else "alert-warning"
         symbole = "⚠" if niveau == "danger" else "!"
-
         st.markdown(
             f"""
             <div class="{classe}">
@@ -795,48 +561,29 @@ def afficher_alertes(df):
 
 
 # ================================================================
-# 8. PAGE DE CONNEXION
+# 8. PAGE DE CONNEXION (LOGIN)
 # ================================================================
 
 def page_login():
-
     st.markdown(
         """
         <div class="login-page">
             <div class="login-container">
                 <div class="login-card">
-
                     <div class="login-left">
-
                         <div class="login-logo">
-
                             <div class="logo-big">
                                 <div class="logo-big-o">O</div>
                                 CP
                             </div>
-
                             <div class="logo-line"></div>
-
-                            <div class="logo-subtitle">
-                                GROUPE OCP
-                            </div>
-
+                            <div class="logo-subtitle">GROUPE OCP</div>
                         </div>
-
                     </div>
-
                     <div class="login-right">
-
-                        <div class="login-title">
-                            Bienvenue sur votre Dashboard GTA
-                        </div>
-
-                        <div class="login-description">
-                            Merci de rentrer votre identifiant et mot de passe
-                        </div>
-
+                        <div class="login-title">Bienvenue sur votre Dashboard GTA</div>
+                        <div class="login-description">Merci de rentrer votre identifiant et mot de passe</div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -844,16 +591,9 @@ def page_login():
         unsafe_allow_html=True
     )
 
-    # ------------------------------------------------------------
-    # Formulaire positionné visuellement sur la partie droite
-    # ------------------------------------------------------------
-
-    # Les colonnes permettent de positionner le formulaire
-    # par-dessus la carte blanche.
-    left, right = st.columns([1.2, 1.8])
+    _, right = st.columns([1.2, 1.8])
 
     with right:
-
         st.markdown(
             """
             <style>
@@ -862,89 +602,45 @@ def page_login():
                 border: none !important;
                 padding: 0 !important;
             }
-
-            .login-form-label {
-                font-size: 13px;
-                font-weight: 500;
-                color: #333;
-            }
             </style>
             """,
             unsafe_allow_html=True
         )
 
-        # Petit décalage pour aligner le formulaire avec la carte
-        st.markdown(
-            "<div style='height: 175px'></div>",
-            unsafe_allow_html=True
-        )
+        st.markdown("<div style='height: 175px'></div>", unsafe_allow_html=True)
 
         with st.form("login_form"):
-
-            username = st.text_input(
-                "Identifiant *",
-                placeholder="Entrez votre identifiant"
-            )
-
-            password = st.text_input(
-                "Mot de passe *",
-                type="password",
-                placeholder="Entrez votre mot de passe"
-            )
-
-            connexion = st.form_submit_button(
-                "Connecter",
-                use_container_width=True
-            )
+            username = st.text_input("Identifiant *", placeholder="Entrez votre identifiant")
+            password = st.text_input("Mot de passe *", type="password", placeholder="Entrez votre mot de passe")
+            connexion = st.form_submit_button("Connecter", use_container_width=True)
 
             if connexion:
-
                 if username == "admin" and password == "1234567":
-
                     st.session_state["authentifie"] = True
                     st.session_state["username"] = username
-
                     st.rerun()
-
                 else:
-
-                    st.error(
-                        "Identifiant ou mot de passe incorrect."
-                    )
+                    st.error("Identifiant ou mot de passe incorrect.")
 
 
 # ================================================================
-# 9. TOP BAR
+# 9. TOP BAR ET SIDEBAR NAVIGATION
 # ================================================================
 
 def afficher_topbar():
-
     col1, col2 = st.columns([4, 1])
 
     with col1:
-
-        st.markdown(
-            ocp_logo(),
-            unsafe_allow_html=True
-        )
+        st.markdown(ocp_logo(), unsafe_allow_html=True)
 
     with col2:
-
         username = st.session_state["username"]
-
         c1, c2 = st.columns([1.2, 1])
 
         with c1:
-
             st.markdown(
                 f"""
-                <div style="
-                    text-align:right;
-                    padding-top:8px;
-                    color:#444;
-                    font-size:13px;
-                    font-weight:500;
-                ">
+                <div style="text-align:right; padding-top:8px; color:#444; font-size:13px; font-weight:500;">
                     👤 {username}
                 </div>
                 """,
@@ -952,31 +648,16 @@ def afficher_topbar():
             )
 
         with c2:
-
-            if st.button(
-                "Se déconnecter",
-                key="logout"
-            ):
-
+            if st.button("Se déconnecter", key="logout"):
                 st.session_state["authentifie"] = False
                 st.session_state["username"] = ""
-
                 st.rerun()
 
 
-# ================================================================
-# 10. SIDEBAR
-# ================================================================
-
 def afficher_sidebar():
-
     st.sidebar.markdown(
         """
-        <div style="
-            text-align:center;
-            font-size:25px;
-            margin-bottom:15px;
-        ">
+        <div style="text-align:center; font-size:25px; margin-bottom:15px;">
             🏭
         </div>
         """,
@@ -999,634 +680,141 @@ def afficher_sidebar():
 
 
 # ================================================================
-# 11. PAGE ACCUEIL
+# 10. PAGES FONCTIONNELLES DU DASHBOARD
 # ================================================================
 
 def page_accueil(df):
-
-    st.markdown(
-        '<div class="page-title">Centre de monitoring GTA</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="page-subtitle">
-            Vue globale du Groupe Turbo-Alternateur
-            • Surveillance en temps réel
-            • Diagnostic industriel
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # ------------------------------------------------------------
-    # Informations temps réel
-    # ------------------------------------------------------------
+    st.markdown('<div class="page-title">Centre de monitoring GTA</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Vue globale du Groupe Turbo-Alternateur • Surveillance en temps réel</div>', unsafe_allow_html=True)
 
     afficher_alertes(df)
-
     st.markdown("<br>", unsafe_allow_html=True)
 
     dernier = df.iloc[-1]
     precedent = df.iloc[-2]
 
     c1, c2, c3, c4 = st.columns(4)
-
     with c1:
-
-        st.metric(
-            "Rendement GTA",
-            f"{dernier['Rendement']:.2f} %",
-            f"{dernier['Rendement'] - precedent['Rendement']:.2f} %"
-        )
-
+        st.metric("Rendement GTA", f"{dernier['Rendement']:.2f} %", f"{dernier['Rendement'] - precedent['Rendement']:.2f} %")
     with c2:
-
-        st.metric(
-            "Résistance condenseur",
-            f"{dernier['Resistance']:.6f}",
-            f"{(dernier['Resistance'] - precedent['Resistance']):.6f}"
-        )
-
+        st.metric("Résistance condenseur", f"{dernier['Resistance']:.6f}", f"{(dernier['Resistance'] - precedent['Resistance']):.6f}")
     with c3:
-
-        st.metric(
-            "Perte turbine",
-            f"{dernier['Perte_Turbine']:.2f} %",
-            f"{dernier['Perte_Turbine'] - precedent['Perte_Turbine']:.2f} %"
-        )
-
+        st.metric("Perte turbine", f"{dernier['Perte_Turbine']:.2f} %", f"{dernier['Perte_Turbine'] - precedent['Perte_Turbine']:.2f} %")
     with c4:
-
-        st.metric(
-            "Perte alternateur",
-            f"{dernier['Perte_Alternateur']:.2f} %",
-            f"{dernier['Perte_Alternateur'] - precedent['Perte_Alternateur']:.2f} %"
-        )
+        st.metric("Perte alternateur", f"{dernier['Perte_Alternateur']:.2f} %", f"{dernier['Perte_Alternateur'] - precedent['Perte_Alternateur']:.2f} %")
 
     st.markdown("<br>", unsafe_allow_html=True)
-
-    # ------------------------------------------------------------
-    # Puissances
-    # ------------------------------------------------------------
 
     col1, col2 = st.columns(2)
-
     with col1:
-
-        st.markdown(
-            '<div class="section-title">Puissance turbine</div>',
-            unsafe_allow_html=True
-        )
-
-        fig = graphique_ligne(
-            df,
-            "Temps",
-            "Puissance_Turbine",
-            "Évolution de la puissance mécanique",
-            "Puissance",
-            "MW"
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
+        st.markdown('<div class="section-title">Puissance turbine</div>', unsafe_allow_html=True)
+        fig = graphique_ligne(df, "Temps", "Puissance_Turbine", "Évolution de la puissance mécanique", "Puissance", "MW")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
+        st.markdown('<div class="section-title">Puissance alternateur</div>', unsafe_allow_html=True)
+        fig = graphique_ligne(df, "Temps", "Puissance_Alternateur", "Évolution de la puissance électrique", "Puissance", "MW")
+        st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown(
-            '<div class="section-title">Puissance alternateur</div>',
-            unsafe_allow_html=True
-        )
-
-        fig = graphique_ligne(
-            df,
-            "Temps",
-            "Puissance_Alternateur",
-            "Évolution de la puissance électrique",
-            "Puissance",
-            "MW"
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
-
-
-# ================================================================
-# 12. PAGE RENDEMENT
-# ================================================================
 
 def page_rendement(df):
-
-    st.markdown(
-        '<div class="page-title">Rendement du GTA</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="page-subtitle">
-            Suivi du rendement global du Groupe Turbo-Alternateur
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="page-title">Rendement du GTA</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Suivi du rendement global du Groupe Turbo-Alternateur</div>', unsafe_allow_html=True)
 
     dernier = df.iloc[-1]
-
-    rendement_moyen = df["Rendement"].mean()
-    rendement_max = df["Rendement"].max()
-
     c1, c2, c3 = st.columns(3)
-
-    with c1:
-
-        st.metric(
-            "Rendement actuel",
-            f"{dernier['Rendement']:.2f} %"
-        )
-
-    with c2:
-
-        st.metric(
-            "Rendement moyen",
-            f"{rendement_moyen:.2f} %"
-        )
-
-    with c3:
-
-        st.metric(
-            "Rendement maximal",
-            f"{rendement_max:.2f} %"
-        )
+    c1.metric("Rendement actuel", f"{dernier['Rendement']:.2f} %")
+    c2.metric("Rendement moyen", f"{df['Rendement'].mean():.2f} %")
+    c3.metric("Rendement maximal", f"{df['Rendement'].max():.2f} %")
 
     st.markdown("<br>", unsafe_allow_html=True)
+    fig = graphique_ligne(df, "Temps", "Rendement", "Évolution du rendement global", "Rendement", "%")
+    st.plotly_chart(fig, use_container_width=True)
 
-    fig = graphique_ligne(
-        df,
-        "Temps",
-        "Rendement",
-        "Évolution du rendement global",
-        "Rendement",
-        "%"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    st.markdown(
-        """
-        <div class="dashboard-card">
-            <b>Interprétation :</b><br>
-            Le rendement global permet d'évaluer la performance
-            énergétique du GTA. Une diminution durable peut indiquer
-            une dégradation des performances de la turbine,
-            du condenseur ou de l'alternateur.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# ================================================================
-# 13. PAGE RÉSISTANCE D'ENCRASSEMENT
-# ================================================================
 
 def page_resistance(df):
-
-    st.markdown(
-        '<div class="page-title">Résistance d\'encrassement</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="page-subtitle">
-            Suivi de la résistance thermique du condenseur
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="page-title">Résistance d\'encrassement</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Suivi de la résistance thermique du condenseur</div>', unsafe_allow_html=True)
 
     dernier = df.iloc[-1]
-
-    resistance_moyenne = df["Resistance"].mean()
-    resistance_max = df["Resistance"].max()
-
     c1, c2, c3 = st.columns(3)
-
-    with c1:
-
-        st.metric(
-            "Résistance actuelle",
-            f"{dernier['Resistance']:.6f} K/W"
-        )
-
-    with c2:
-
-        st.metric(
-            "Valeur moyenne",
-            f"{resistance_moyenne:.6f} K/W"
-        )
-
-    with c3:
-
-        st.metric(
-            "Valeur maximale",
-            f"{resistance_max:.6f} K/W"
-        )
+    c1.metric("Résistance actuelle", f"{dernier['Resistance']:.6f} K/W")
+    c2.metric("Valeur moyenne", f"{df['Resistance'].mean():.6f} K/W")
+    c3.metric("Valeur maximale", f"{df['Resistance'].max():.6f} K/W")
 
     st.markdown("<br>", unsafe_allow_html=True)
+    fig = graphique_ligne(df, "Temps", "Resistance", "Évolution de la résistance thermique", "Résistance thermique", "K/W")
+    st.plotly_chart(fig, use_container_width=True)
 
-    fig = graphique_ligne(
-        df,
-        "Temps",
-        "Resistance",
-        "Évolution de la résistance thermique",
-        "Résistance thermique",
-        "K/W"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    # Diagnostic
-    if dernier["Resistance"] > 0.00055:
-
-        st.error(
-            "⚠️ Encrassement important détecté : "
-            "une inspection du condenseur est recommandée."
-        )
-
-    elif dernier["Resistance"] > 0.00050:
-
-        st.warning(
-            "⚠️ Niveau d'encrassement à surveiller."
-        )
-
-    else:
-
-        st.success(
-            "✓ Résistance thermique dans une plage normale."
-        )
-
-
-# ================================================================
-# 14. PAGE PERTES TURBINE
-# ================================================================
 
 def page_perte_turbine(df):
-
-    st.markdown(
-        '<div class="page-title">Pertes turbine</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="page-subtitle">
-            Analyse des pertes thermiques et mécaniques de la turbine
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="page-title">Pertes turbine</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Analyse des pertes thermiques et mécaniques de la turbine</div>', unsafe_allow_html=True)
 
     dernier = df.iloc[-1]
-
-    moyenne = df["Perte_Turbine"].mean()
-    maximum = df["Perte_Turbine"].max()
-
     c1, c2, c3 = st.columns(3)
-
-    with c1:
-
-        st.metric(
-            "Pertes actuelles",
-            f"{dernier['Perte_Turbine']:.2f} %"
-        )
-
-    with c2:
-
-        st.metric(
-            "Pertes moyennes",
-            f"{moyenne:.2f} %"
-        )
-
-    with c3:
-
-        st.metric(
-            "Pertes maximales",
-            f"{maximum:.2f} %"
-        )
+    c1.metric("Pertes actuelles", f"{dernier['Perte_Turbine']:.2f} %")
+    c2.metric("Pertes moyennes", f"{df['Perte_Turbine'].mean():.2f} %")
+    c3.metric("Pertes maximales", f"{df['Perte_Turbine'].max():.2f} %")
 
     st.markdown("<br>", unsafe_allow_html=True)
+    fig = graphique_ligne(df, "Temps", "Perte_Turbine", "Évolution des pertes turbine", "Pertes", "%")
+    st.plotly_chart(fig, use_container_width=True)
 
-    fig = graphique_ligne(
-        df,
-        "Temps",
-        "Perte_Turbine",
-        "Évolution des pertes turbine",
-        "Pertes",
-        "%"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    if dernier["Perte_Turbine"] > 8:
-
-        st.error(
-            "⚠️ Pertes turbine élevées. "
-            "Une analyse des conditions de fonctionnement est recommandée."
-        )
-
-    else:
-
-        st.success(
-            "✓ Pertes turbine dans la plage de fonctionnement normale."
-        )
-
-
-# ================================================================
-# 15. PAGE PERTES ALTERNATEUR
-# ================================================================
 
 def page_perte_alternateur(df):
-
-    st.markdown(
-        '<div class="page-title">Pertes alternateur</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="page-subtitle">
-            Analyse des pertes électriques de l'alternateur
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="page-title">Pertes alternateur</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Analyse des pertes électriques de l\'alternateur</div>', unsafe_allow_html=True)
 
     dernier = df.iloc[-1]
-
-    moyenne = df["Perte_Alternateur"].mean()
-    maximum = df["Perte_Alternateur"].max()
-
     c1, c2, c3 = st.columns(3)
-
-    with c1:
-
-        st.metric(
-            "Pertes actuelles",
-            f"{dernier['Perte_Alternateur']:.2f} %"
-        )
-
-    with c2:
-
-        st.metric(
-            "Pertes moyennes",
-            f"{moyenne:.2f} %"
-        )
-
-    with c3:
-
-        st.metric(
-            "Pertes maximales",
-            f"{maximum:.2f} %"
-        )
+    c1.metric("Pertes actuelles", f"{dernier['Perte_Alternateur']:.2f} %")
+    c2.metric("Pertes moyennes", f"{df['Perte_Alternateur'].mean():.2f} %")
+    c3.metric("Pertes maximales", f"{df['Perte_Alternateur'].max():.2f} %")
 
     st.markdown("<br>", unsafe_allow_html=True)
-
-    fig = graphique_ligne(
-        df,
-        "Temps",
-        "Perte_Alternateur",
-        "Évolution des pertes alternateur",
-        "Pertes",
-        "%"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    if dernier["Perte_Alternateur"] > 5:
-
-        st.error(
-            "⚠️ Pertes alternateur élevées. "
-            "Vérifier les conditions électriques et thermiques."
-        )
-
-    else:
-
-        st.success(
-            "✓ Pertes alternateur dans la plage normale."
-        )
+    fig = graphique_ligne(df, "Temps", "Perte_Alternateur", "Évolution des pertes alternateur", "Pertes", "%")
+    st.plotly_chart(fig, use_container_width=True)
 
 
 # ================================================================
-# 16. APPLICATION PRINCIPALE
+# 11. MODE TEMPS RÉEL (FRAGMENTS STREAMLIT)
 # ================================================================
-
-def application_principale():
-
-    # ------------------------------------------------------------
-    # Génération des données
-    # ------------------------------------------------------------
-
-    if st.session_state["historique"] is None:
-
-        st.session_state["historique"] = generer_donnees_gta(60)
-
-    # ------------------------------------------------------------
-    # Sidebar
-    # ------------------------------------------------------------
-
-    page = afficher_sidebar()
-
-    # ------------------------------------------------------------
-    # Top bar
-    # ------------------------------------------------------------
-
-    st.markdown(
-        '<div class="topbar">',
-        unsafe_allow_html=True
-    )
-
-    afficher_topbar()
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    # ------------------------------------------------------------
-    # Données
-    # ------------------------------------------------------------
-
-    df = st.session_state["historique"]
-
-    # ------------------------------------------------------------
-    # Navigation
-    # ------------------------------------------------------------
-
-    if page == "🏠 Accueil":
-
-        page_accueil(df)
-
-    elif page == "📈 Rendement":
-
-        page_rendement(df)
-
-    elif page == "🌡️ Résistance d'encrassement":
-
-        page_resistance(df)
-
-    elif page == "⚡ Perte turbine":
-
-        page_perte_turbine(df)
-
-    elif page == "🔌 Perte alternateur":
-
-        page_perte_alternateur(df)
-
-    # ------------------------------------------------------------
-    # Actualisation automatique
-    # ------------------------------------------------------------
-
-    # Streamlit >= 1.37
-    # Le fragment permet de relancer automatiquement l'application.
-    #
-    # Pour une véritable connexion industrielle, cette simulation
-    # devra être remplacée par une source de données réelle :
-    # OPC-UA, Modbus, API, SQL, Historian, etc.
-
-    st.markdown(
-        f"""
-        <div class="footer">
-            Dashboard GTA • Groupe OCP •
-            Dernière mise à jour :
-            {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# ================================================================
-# 17. MODE TEMPS RÉEL
-# ================================================================
-
-# Pour éviter de dépendre d'une librairie externe comme
-# streamlit-autorefresh, on utilise le mécanisme de fragments
-# disponible dans les versions récentes de Streamlit.
 
 def dashboard_realtime():
-
     @st.fragment(run_every="5s")
     def monitoring():
-
-        # --------------------------------------------------------
-        # Génération d'une nouvelle mesure
-        # --------------------------------------------------------
-
         nouvelles_donnees = generer_donnees_gta(1)
 
-        # --------------------------------------------------------
-        # Historique existant
-        # --------------------------------------------------------
-
         if st.session_state["historique"] is None:
-
             st.session_state["historique"] = generer_donnees_gta(59)
 
         df = st.session_state["historique"]
-
-        # --------------------------------------------------------
-        # Ajout de la nouvelle mesure
-        # --------------------------------------------------------
-
-        df = pd.concat(
-            [
-                df,
-                nouvelles_donnees
-            ],
-            ignore_index=True
-        )
-
-        # Conservation des 60 derniers points
+        df = pd.concat([df, nouvelles_donnees], ignore_index=True)
         df = df.tail(60).reset_index(drop=True)
-
         st.session_state["historique"] = df
-
-        # --------------------------------------------------------
-        # Navigation
-        # --------------------------------------------------------
 
         page = afficher_sidebar()
 
-        # --------------------------------------------------------
-        # Top bar
-        # --------------------------------------------------------
-
-        st.markdown(
-            '<div class="topbar">',
-            unsafe_allow_html=True
-        )
-
+        st.markdown('<div class="topbar">', unsafe_allow_html=True)
         afficher_topbar()
-
-        st.markdown(
-            '</div>',
-            unsafe_allow_html=True
-        )
-
-        # --------------------------------------------------------
-        # Affichage
-        # --------------------------------------------------------
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if page == "🏠 Accueil":
-
             page_accueil(df)
-
         elif page == "📈 Rendement":
-
             page_rendement(df)
-
         elif page == "🌡️ Résistance d'encrassement":
-
             page_resistance(df)
-
         elif page == "⚡ Perte turbine":
-
             page_perte_turbine(df)
-
         elif page == "🔌 Perte alternateur":
-
             page_perte_alternateur(df)
-
-        # --------------------------------------------------------
-        # Footer
-        # --------------------------------------------------------
 
         st.markdown(
             f"""
             <div class="footer">
-                Dashboard GTA • Groupe OCP •
-                Monitoring temps réel •
-                Dernière mise à jour :
-                {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+                Dashboard GTA • Groupe OCP • Monitoring temps réel • Dernière mise à jour : {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
             </div>
             """,
             unsafe_allow_html=True
@@ -1636,13 +824,10 @@ def dashboard_realtime():
 
 
 # ================================================================
-# 18. POINT D'ENTRÉE
+# 12. POINT D'ENTRÉE PRINCIPAL DE L'APPLICATION
 # ================================================================
 
 if not st.session_state["authentifie"]:
-
     page_login()
-
 else:
-
     dashboard_realtime()
