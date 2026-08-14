@@ -72,7 +72,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Background de connexion noirci ➔ Fleur 4s ➔ Rideau vers le haut)
+# 4. PAGE DE CONNEXION (Icônes Personne & Cadenas ajoutées)
 # ================================================================
 
 def page_login():
@@ -110,7 +110,7 @@ def page_login():
         }
         """
 
-    # Fond de l'application (derrière la page de login)
+    # Fond de l'application
     if bg_b64:
         bg_css = f"""
         .stApp {{
@@ -121,18 +121,10 @@ def page_login():
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
         }}
-        /* Background de l'animation : la même image mais très fortement assombrie pour voir sa structure */
-        #loader-wrapper {{
-            background: linear-gradient(rgba(10, 15, 12, 0.88), rgba(5, 10, 8, 0.95)), 
-                        url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: cover !important;
-            background-position: center !important;
-        }}
         """
     else:
         bg_css = """
         .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; }
-        #loader-wrapper { background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(5,5,5,0.98)) !important; }
         """
 
     # Injection HTML et CSS
@@ -151,16 +143,15 @@ def page_login():
         /* --- SÉQUENCE D'ANIMATION --- */
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, rgba(30,30,30,0.98), rgba(10,10,10,1));
             z-index: 999999; display: flex; justify-content: center; align-items: center;
             pointer-events: none;
-            /* L'effet de levé de rideau vers le haut après 4 secondes */
             animation: slideUpLoader 0.8s cubic-bezier(0.8, 0, 0.2, 1) 4.0s forwards;
         }}
         @keyframes slideUpLoader {{
             to {{ transform: translateY(-100%); opacity: 0; visibility: hidden; display: none; z-index: -1; }}
         }}
         
-        /* La Fleur s'anime pendant les 4 secondes de pause du background */
         .flower-container {{
             position: relative; z-index: 20;
             animation: flowerFade 4.0s forwards;
@@ -172,7 +163,6 @@ def page_login():
         
         .flower-svg {{ width: 90px; height: 90px; }}
         
-        /* Tige (0s à 1s) et Pétales (1s à 3.5s) */
         .stem {{ stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawStem 1s ease-out 0.3s forwards; }}
         @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
 
@@ -203,9 +193,40 @@ def page_login():
 
         div[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; }}
         div[data-testid="stTextInput"] label p {{ color: #007A33 !important; font-weight: 600 !important; font-size: 13px !important; }}
-        div[data-testid="stTextInput"] input {{ background-color: #f4f6f9 !important; border: 1px solid #e1e8ed !important; border-radius: 8px !important; padding: 10px 14px !important; font-size: 14px !important; color: #333 !important; }}
-        div[data-testid="stTextInput"] input:focus {{ border-color: #007A33 !important; box-shadow: 0 0 0 1px #007A33 !important; }}
 
+        /* --- AJOUT DES ICÔNES (Personne & Cadenas) DANS LES CHAMPS --- */
+        /* Champ Identifiant (Symbole Personne) */
+        div[data-testid="stForm"] div[data-testid="stVerticalBlock"] > div:nth-child(1) input {{
+            background-color: #f4f6f9 !important;
+            border: 1px solid #e1e8ed !important;
+            border-radius: 8px !important;
+            padding: 10px 14px 10px 40px !important;
+            font-size: 14px !important;
+            color: #333 !important;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23007A33" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>') !important;
+            background-repeat: no-repeat !important;
+            background-position: 12px center !important;
+        }}
+
+        /* Champ Mot de passe (Symbole Cadenas) */
+        div[data-testid="stForm"] div[data-testid="stVerticalBlock"] > div:nth-child(2) input {{
+            background-color: #f4f6f9 !important;
+            border: 1px solid #e1e8ed !important;
+            border-radius: 8px !important;
+            padding: 10px 14px 10px 40px !important;
+            font-size: 14px !important;
+            color: #333 !important;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23007A33" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>') !important;
+            background-repeat: no-repeat !important;
+            background-position: 12px center !important;
+        }}
+
+        div[data-testid="stTextInput"] input:focus {{
+            border-color: #007A33 !important;
+            box-shadow: 0 0 0 1px #007A33 !important;
+        }}
+
+        /* --- BOUTON CONNECTER --- */
         div[data-testid="stFormSubmitButton"] button {{
             background-color: #007A33 !important; color: white !important; border-radius: 30px !important;
             font-weight: 600 !important; font-size: 15px !important; padding: 8px 24px !important; width: 100% !important;
