@@ -39,6 +39,16 @@ if "historique" not in st.session_state:
 if "premiere_visite" not in st.session_state:
     st.session_state["premiere_visite"] = True
 
+# États pour le Pan/Zoom de l'image de fond
+if "bg_zoom" not in st.session_state:
+    st.session_state["bg_zoom"] = 100  # En pourcent (%)
+
+if "bg_pos_y" not in st.session_state:
+    st.session_state["bg_pos_y"] = 50  # En pourcent (%)
+
+if "bg_pos_x" not in st.session_state:
+    st.session_state["bg_pos_x"] = 50  # En pourcent (%)
+
 # ================================================================
 # 3. GESTION DES IMAGES (Logo et Background)
 # ================================================================
@@ -72,7 +82,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Animation Background Détaillé & Assombri ➔ Fleur 4s ➔ Rideau vers le haut)
+# 4. PAGE DE CONNEXION (Avec Contrôles de Zoom et Déplacement)
 # ================================================================
 
 def page_login():
@@ -110,23 +120,26 @@ def page_login():
         }
         """
 
-    # Fond de l'application (derrière la page de login)
+    # Application dynamique du Zoom et du Pan (Déplacement) via les variables de session
+    zoom_val = f"{st.session_state['bg_zoom']}%"
+    pos_x_val = f"{st.session_state['bg_pos_x']}%"
+    pos_y_val = f"{st.session_state['bg_pos_y']}%"
+
     if bg_b64:
         bg_css = f"""
         .stApp {{
             background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: cover !important;
-            background-position: center !important;
+            background-size: {zoom_val} !important;
+            background-position: {pos_x_val} {pos_y_val} !important;
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
         }}
-        /* Background de l'animation : même image avec un voile léger pour voir les détails */
         #loader-wrapper {{
             background: linear-gradient(rgba(10, 15, 12, 0.45), rgba(5, 10, 8, 0.65)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: cover !important;
-            background-position: center !important;
+            background-size: {zoom_val} !important;
+            background-position: {pos_x_val} {pos_y_val} !important;
         }}
         """
     else:
@@ -153,14 +166,12 @@ def page_login():
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 999999; display: flex; justify-content: center; align-items: center;
             pointer-events: none;
-            /* L'effet de levé de rideau vers le haut après 4 secondes */
             animation: slideUpLoader 0.8s cubic-bezier(0.8, 0, 0.2, 1) 4.0s forwards;
         }}
         @keyframes slideUpLoader {{
             to {{ transform: translateY(-100%); opacity: 0; visibility: hidden; display: none; z-index: -1; }}
         }}
         
-        /* La Fleur s'anime pendant les 4 secondes de pause du background */
         .flower-container {{
             position: relative; z-index: 20;
             animation: flowerFade 4.0s forwards;
@@ -172,7 +183,6 @@ def page_login():
         
         .flower-svg {{ width: 90px; height: 90px; }}
         
-        /* Tige (0s à 1s) et Pétales (1s à 3.5s) */
         .stem {{ stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawStem 1s ease-out 0.3s forwards; }}
         @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
 
@@ -191,7 +201,7 @@ def page_login():
 
         div[data-testid="stFormSubmitInstructions"], div[data-testid="InputInstructions"] {{ display: none !important; }}
 
-        .block-container {{ padding-top: 15vh !important; padding-bottom: 15vh !important; max-width: 750px !important; }}
+        .block-container {{ padding-top: 10vh !important; padding-bottom: 10vh !important; max-width: 750px !important; }}
 
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
@@ -204,35 +214,20 @@ def page_login():
         div[data-testid="stForm"] {{ border: none !important; padding: 0 !important; background: transparent !important; }}
         div[data-testid="stTextInput"] label p {{ color: #007A33 !important; font-weight: 600 !important; font-size: 13px !important; }}
 
-        /* --- AJOUT DES ICÔNES (Personne & Cadenas) DANS LES CHAMPS --- */
+        /* --- ICÔNES (Personne & Cadenas) --- */
         div[data-testid="stForm"] div[data-testid="stVerticalBlock"] > div:nth-child(1) input {{
-            background-color: #f4f6f9 !important;
-            border: 1px solid #e1e8ed !important;
-            border-radius: 8px !important;
-            padding: 10px 14px 10px 40px !important;
-            font-size: 14px !important;
-            color: #333 !important;
+            background-color: #f4f6f9 !important; border: 1px solid #e1e8ed !important; border-radius: 8px !important;
+            padding: 10px 14px 10px 40px !important; font-size: 14px !important; color: #333 !important;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23007A33" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>') !important;
-            background-repeat: no-repeat !important;
-            background-position: 12px center !important;
+            background-repeat: no-repeat !important; background-position: 12px center !important;
         }}
-
         div[data-testid="stForm"] div[data-testid="stVerticalBlock"] > div:nth-child(2) input {{
-            background-color: #f4f6f9 !important;
-            border: 1px solid #e1e8ed !important;
-            border-radius: 8px !important;
-            padding: 10px 14px 10px 40px !important;
-            font-size: 14px !important;
-            color: #333 !important;
+            background-color: #f4f6f9 !important; border: 1px solid #e1e8ed !important; border-radius: 8px !important;
+            padding: 10px 14px 10px 40px !important; font-size: 14px !important; color: #333 !important;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23007A33" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>') !important;
-            background-repeat: no-repeat !important;
-            background-position: 12px center !important;
+            background-repeat: no-repeat !important; background-position: 12px center !important;
         }}
-
-        div[data-testid="stTextInput"] input:focus {{
-            border-color: #007A33 !important;
-            box-shadow: 0 0 0 1px #007A33 !important;
-        }}
+        div[data-testid="stTextInput"] input:focus {{ border-color: #007A33 !important; box-shadow: 0 0 0 1px #007A33 !important; }}
 
         /* --- BOUTON CONNECTER --- */
         div[data-testid="stFormSubmitButton"] button {{
@@ -241,10 +236,43 @@ def page_login():
             border: none !important; margin-top: 15px !important; transition: 0.3s ease !important;
         }}
         div[data-testid="stFormSubmitButton"] button:hover {{ background-color: #005f27 !important; transform: translateY(-2px); }}
+        
+        /* --- STYLE DU PANNEAU DE CONTRÔLE FLOTTANT (ZOOM & PAN) --- */
+        .control-panel {{
+            background: rgba(255, 255, 255, 0.9) !important;
+            padding: 10px 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
+
+    # --- PANNEAU FLOTTANT DE CONTRÔLE (ZOOM & DÉPLACEMENT) ---
+    with st.expander("🔍 Contrôler le fond d'écran (Zoom & Déplacement)", expanded=False):
+        c_z1, c_z2, c_z3 = st.columns(3)
+        with c_z1:
+            if st.button("🔍 Zoom In (+)", use_container_width=True):
+                st.session_state["bg_zoom"] = min(300, st.session_state["bg_zoom"] + 20)
+                st.rerun()
+        with c_z2:
+            if st.button("🔍 Zoom Out (-)", use_container_width=True):
+                st.session_state["bg_zoom"] = max(50, st.session_state["bg_zoom"] - 20)
+                st.rerun()
+        with c_z3:
+            if st.button("↺ Réinitialiser", use_container_width=True):
+                st.session_state["bg_zoom"] = 100
+                st.session_state["bg_pos_x"] = 50
+                st.session_state["bg_pos_y"] = 50
+                st.rerun()
+
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            st.session_state["bg_pos_x"] = st.slider("Déplacement Horizontal (Gauche / Droite)", 0, 100, st.session_state["bg_pos_x"])
+        with col_p2:
+            st.session_state["bg_pos_y"] = st.slider("Déplacement Vertical (Haut / Bas)", 0, 100, st.session_state["bg_pos_y"])
 
     col_logo, col_form = st.columns([1, 1.3], gap="medium")
 
