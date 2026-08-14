@@ -36,6 +36,10 @@ if "username" not in st.session_state:
 if "historique" not in st.session_state:
     st.session_state["historique"] = None
 
+# Variable pour suivre si c'est la toute première visite (pour l'animation de la fleur)
+if "premiere_visite" not in st.session_state:
+    st.session_state["premiere_visite"] = True
+
 # ================================================================
 # 3. GESTION DES IMAGES (Logo et Background)
 # ================================================================
@@ -69,14 +73,36 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION 
+# 4. PAGE DE CONNEXION (Scrollable + Animation Fleur)
 # ================================================================
 
 def page_login():
     bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
-    # Application du fond directement sur le conteneur principal (.stApp)
+    # ÉCRAN DE CHARGEMENT AVEC ANIMATION DE LA FLEUR OCP
+    loader_html = ""
+    if st.session_state["premiere_visite"]:
+        loader_html = """
+        <div id="loader-wrapper">
+            <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Tige -->
+                <path d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="4" fill="transparent" />
+                <!-- Pétale centrale (Pousse en haut) -->
+                <path class="leaf petal1" fill="#00a651" d="M50 50 C 30 30 40 10 50 10 C 60 10 70 30 50 50 Z" />
+                <!-- Pétale gauche -->
+                <path class="leaf petal2" fill="#007A33" d="M50 50 C 20 40 10 60 10 80 C 30 90 40 70 50 50 Z" />
+                <!-- Pétale droite -->
+                <path class="leaf petal3" fill="#00a651" d="M50 50 C 80 40 90 60 90 80 C 70 90 60 70 50 50 Z" />
+            </svg>
+            <h2 style="color: #007A33; font-family: 'Poppins', sans-serif; margin-top: 25px; font-weight: 700; letter-spacing: 1px;">GROUPE OCP</h2>
+            <p style="color: #666; font-family: 'Poppins', sans-serif; font-size: 14px;">Déploiement du portail industriel...</p>
+        </div>
+        """
+        # On passe à False pour que l'animation ne se joue qu'une seule fois
+        st.session_state["premiere_visite"] = False
+
+    # Application du fond
     if bg_b64:
         bg_css = f"""
         .stApp {{
@@ -86,17 +112,21 @@ def page_login():
             background-position: center !important;
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
+            overflow-y: auto !important; /* Permet le défilement haut/bas */
         }}
         """
     else:
         bg_css = """
         .stApp {{
             background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)) !important;
+            overflow-y: auto !important; /* Permet le défilement haut/bas */
         }}
         """
 
+    # Injection HTML et CSS combinés
     st.markdown(
         f"""
+        {loader_html}
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -107,8 +137,29 @@ def page_login():
         [data-testid="stSidebar"] {{ display: none !important; }}
         [data-testid="collapsedControl"] {{ display: none !important; }}
 
-        /* Injection de l'image de fond */
+        /* Injection de l'image de fond et de la possibilité de scroll */
         {bg_css}
+
+        /* --- CSS DE L'ÉCRAN DE CHARGEMENT --- */
+        #loader-wrapper {{
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #f4f6f5; z-index: 999999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeOutLoader 0.8s ease-in-out 3s forwards; /* Reste 3s puis disparaît */
+        }}
+        .flower-svg {{ width: 130px; height: 130px; transform-origin: bottom center; }}
+        .petal1 {{ animation: growPetal 1.2s ease-out 0.2s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal2 {{ animation: growPetal 1.2s ease-out 0.5s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal3 {{ animation: growPetal 1.2s ease-out 0.8s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        
+        @keyframes growPetal {{
+            0% {{ transform: scale(0) translateY(10px); opacity: 0; }}
+            70% {{ transform: scale(1.1) translateY(0); opacity: 1; }}
+            100% {{ transform: scale(1) translateY(0); opacity: 1; }}
+        }}
+        @keyframes fadeOutLoader {{
+            100% {{ opacity: 0; visibility: hidden; display: none; }}
+        }}
 
         /* --- MASQUER "Press Enter to submit form" --- */
         div[data-testid="stFormSubmitInstructions"], 
@@ -119,24 +170,17 @@ def page_login():
         /* --- CENTRAGE ET RÉDUCTION DE LA CARTE --- */
         .block-container {{
             padding-top: 15vh !important;
+            padding-bottom: 15vh !important; /* Ajoute de l'espace en bas pour scroller */
             max-width: 750px !important;
         }}
 
-        /* --- ANIMATION FLOTTANTE --- */
-        @keyframes float {{
-            0% {{ transform: translateY(0px); box-shadow: 0px 15px 50px rgba(0,0,0,0.7); }}
-            50% {{ transform: translateY(-15px); box-shadow: 0px 25px 60px rgba(0,0,0,0.8); }}
-            100% {{ transform: translateY(0px); box-shadow: 0px 15px 50px rgba(0,0,0,0.7); }}
-        }}
-
-        /* --- LA CARTE BLANCHE --- */
+        /* --- LA CARTE BLANCHE (Sans l'animation flottante) --- */
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
             border-radius: 20px !important;
             padding: 40px 30px !important;
             box-shadow: 0px 15px 50px rgba(0,0,0,0.7) !important;
             align-items: center !important;
-            animation: float 6s ease-in-out infinite !important; /* Ajout de l'animation ici */
         }}
 
         /* --- STYLE DU FORMULAIRE ET DES CHAMPS --- */
