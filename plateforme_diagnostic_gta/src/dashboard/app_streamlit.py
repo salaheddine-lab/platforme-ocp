@@ -66,37 +66,34 @@ def trouver_fichier(noms_fichiers):
     return None
 
 CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vector.svg-.png"])
-# Ajout du nouveau nom d'image dans la liste
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Correction Répétition & Taille)
+# 4. PAGE DE CONNEXION (Correction de la marge grise)
 # ================================================================
 
 def page_login():
     bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
-    # Image de fond avec overlay sombre et ajout strict de background-repeat: no-repeat
+    # Application du fond directement sur le conteneur principal (.stApp)
     if bg_b64:
-        bg_html = f"""
-        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-                    background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
-                                url('data:image/jpg;base64,{bg_b64}');
-                    background-size: cover; background-position: center; background-repeat: no-repeat;
-                    z-index: -999;">
-        </div>
+        bg_css = f"""
+        .stApp {{
+            background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
+                        url('data:image/jpg;base64,{bg_b64}') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
+        }}
         """
     else:
-        bg_html = """
-        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-                    background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)); 
-                    z-index: -999;">
-        </div>
+        bg_css = """
+        .stApp {{
+            background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)) !important;
+        }}
         """
-
-    # Injection du fond d'écran
-    st.markdown(bg_html, unsafe_allow_html=True)
 
     st.markdown(
         f"""
@@ -105,24 +102,25 @@ def page_login():
 
         html, body, [class*="css"] {{ font-family: 'Poppins', sans-serif; }}
         #MainMenu, header, footer {{ visibility: hidden; }}
-        [data-testid="stSidebar"] {{ display: none; }}
+        
+        /* Masquer la barre latérale sur la page de connexion */
+        [data-testid="stSidebar"] {{ display: none !important; }}
+        [data-testid="collapsedControl"] {{ display: none !important; }}
 
-        /* Rendre l'application transparente pour voir la div de fond */
-        .stApp {{
-            background: transparent !important;
-        }}
+        /* Injection de l'image de fond */
+        {bg_css}
 
         /* --- CENTRAGE ET RÉDUCTION DE LA CARTE --- */
         .block-container {{
             padding-top: 15vh !important;
-            max-width: 750px !important; /* Réduit de 950px à 750px pour une carte plus petite */
+            max-width: 750px !important;
         }}
 
         /* --- LA CARTE BLANCHE --- */
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
             border-radius: 20px !important;
-            padding: 40px 30px !important; /* Marges internes réduites */
+            padding: 40px 30px !important;
             box-shadow: 0px 15px 50px rgba(0,0,0,0.7) !important;
             align-items: center !important;
         }}
@@ -137,7 +135,7 @@ def page_login():
         div[data-testid="stTextInput"] label p {{
             color: #007A33 !important;
             font-weight: 600 !important;
-            font-size: 13px !important; /* Légèrement plus petit */
+            font-size: 13px !important;
         }}
 
         div[data-testid="stTextInput"] input {{
@@ -179,7 +177,6 @@ def page_login():
     col_logo, col_form = st.columns([1, 1.3], gap="medium")
 
     with col_logo:
-        # Affichage du logo centré et redimensionné (plus petit)
         if logo_b64:
             st.markdown(
                 f"""
@@ -200,7 +197,6 @@ def page_login():
             """, unsafe_allow_html=True)
 
     with col_form:
-        # Titre légèrement réduit pour correspondre à la nouvelle taille
         st.markdown("<h2 style='color: #202522; font-weight: 700; font-size: 24px; margin-bottom: 5px; line-height: 1.2;'>Bienvenue sur votre<br>Dashboard GTA</h2>", unsafe_allow_html=True)
         st.markdown("<p style='color: #7a817d; font-size: 13px; margin-bottom: 20px;'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
 
