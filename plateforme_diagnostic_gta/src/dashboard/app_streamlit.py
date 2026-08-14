@@ -73,7 +73,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Correction Synchro Rideau/Fleur/Carte)
+# 4. PAGE DE CONNEXION (Animation Rideau + Fleur Synchronisée)
 # ================================================================
 
 def page_login():
@@ -81,24 +81,25 @@ def page_login():
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
     loader_html = ""
+    # Si ce n'est pas la première visite, la carte s'affiche instantanément sans animation
     animation_carte_css = """
         div[data-testid="stHorizontalBlock"] {
             opacity: 1 !important;
         }
     """
 
-    # L'animation complète de 5 secondes ne se joue qu'à la première ouverture
+    # Si c'est la première visite : Séquence d'animation complète de 5 secondes
     if st.session_state["premiere_visite"]:
-        loader_html = f"""
+        loader_html = """
         <div id="loader-wrapper">
             <!-- Les deux moitiés du rideau -->
             <div class="half top-half"></div>
             <div class="half bottom-half"></div>
             
-            <!-- Le conteneur de la fleur (4 secondes d'animation) -->
+            <!-- Le conteneur de la fleur -->
             <div class="flower-container">
                 <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path class="stem" d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="transparent" stroke-linecap="round" />
+                    <path class="stem" d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="none" stroke-linecap="round" />
                     <path class="leaf petal1" fill="#00a651" d="M50 50 C 30 30 40 10 50 10 C 60 10 70 30 50 50 Z" />
                     <path class="leaf petal2" fill="#007A33" d="M50 50 C 20 40 10 60 10 80 C 30 90 40 70 50 50 Z" />
                     <path class="leaf petal3" fill="#00a651" d="M50 50 C 80 40 90 60 90 80 C 70 90 60 70 50 50 Z" />
@@ -106,17 +107,17 @@ def page_login():
             </div>
         </div>
         """
-        # La carte reste totalement invisible pendant 4.6 secondes, puis s'affiche doucement
+        # La carte reste invisible pendant 4.6 secondes, puis s'affiche doucement
         animation_carte_css = """
         div[data-testid="stHorizontalBlock"] {
             opacity: 0;
-            animation: revealCard 0.8s ease-in-out 4.6s forwards !important;
+            animation: revealCard 1s ease-in-out 4.6s forwards !important;
         }
         @keyframes revealCard { to { opacity: 1; } }
         """
         st.session_state["premiere_visite"] = False
 
-    # Fond de l'application
+    # Configuration des fonds
     if bg_b64:
         bg_css = f"""
         .stApp {{
@@ -128,8 +129,6 @@ def page_login():
             background-attachment: fixed !important;
             overflow-y: auto !important;
         }}
-
-        /* Le rideau utilise le même fond assombri (Glassmorphism + Dark) */
         .half {{
             position: absolute; left: 0; width: 100vw; height: 50vh;
             background: linear-gradient(rgba(10, 18, 14, 0.95), rgba(10, 18, 14, 0.98)), 
@@ -144,10 +143,10 @@ def page_login():
             background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)) !important;
             overflow-y: auto !important;
         }}
-        .half { background: #111; z-index: 10; position: absolute; left: 0; width: 100vw; height: 50vh; }
+        .half { position: absolute; left: 0; width: 100vw; height: 50vh; background: #111; z-index: 10; }
         """
 
-    # Injection HTML et CSS
+    # Injection CSS & HTML
     st.markdown(
         f"""
         {loader_html}
@@ -162,57 +161,68 @@ def page_login():
         /* Injection du fond dynamique */
         {bg_css}
 
-        /* --- CSS DE L'ÉCRAN DE CHARGEMENT --- */
+        /* --- SÉQUENCE D'ANIMATION (RIDEAU + FLEUR) --- */
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 999999; display: flex; justify-content: center; align-items: center;
-            animation: fadeOutLoader 0.1s forwards 5s; /* Détruit le wrapper après 5s */
+            z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
             pointer-events: none;
+            animation: destroyLoader 0.1s forwards 5s; /* Disparition définitive après 5s */
         }}
+        @keyframes destroyLoader {{ to {{ opacity: 0; visibility: hidden; display: none; z-index: -1; }} }}
         
-        /* 1. Le rideau (0 à 0.6s, puis disparaît à 4.6s) */
+        /* 1. Les Rideaux (Se ferment à 0.6s, s'estompent à 4.6s) */
         .top-half {{
             top: 0; transform: translateY(-100%);
-            animation: slideInTop 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards, fadeOutHalf 0.6s ease-in-out 4.6s forwards;
+            animation: curtainT 5s forwards;
         }}
         .bottom-half {{
             bottom: 0; transform: translateY(100%);
-            animation: slideInBottom 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards, fadeOutHalf 0.6s ease-in-out 4.6s forwards;
+            animation: curtainB 5s forwards;
         }}
-        @keyframes slideInTop {{ to {{ transform: translateY(0); }} }}
-        @keyframes slideInBottom {{ to {{ transform: translateY(0); }} }}
-        @keyframes fadeOutHalf {{ to {{ opacity: 0; visibility: hidden; }} }}
+        @keyframes curtainT {{
+            0% {{ transform: translateY(-100%); opacity: 1; }}
+            12% {{ transform: translateY(0); opacity: 1; }}    /* 0.6s - Fermé */
+            85% {{ transform: translateY(0); opacity: 1; }}    /* 4.25s - Début fondu */
+            100% {{ transform: translateY(0); opacity: 0; }}   /* 5.0s - Disparu */
+        }}
+        @keyframes curtainB {{
+            0% {{ transform: translateY(100%); opacity: 1; }}
+            12% {{ transform: translateY(0); opacity: 1; }}
+            85% {{ transform: translateY(0); opacity: 1; }}
+            100% {{ transform: translateY(0); opacity: 0; }}
+        }}
 
-        /* 2. La fleur (0.6s à 4.6s) */
+        /* 2. Le Conteneur de la Fleur (Sécurisé pour tous navigateurs) */
         .flower-container {{
-            position: relative; z-index: 20; opacity: 0;
-            animation: showFlower 0.1s ease-out 0.6s forwards, hideFlower 0.4s ease-out 4.4s forwards;
+            position: absolute; z-index: 20; opacity: 0;
+            animation: flowerVis 5s forwards;
         }}
-        @keyframes showFlower {{ to {{ opacity: 1; }} }}
-        @keyframes hideFlower {{ to {{ opacity: 0; }} }}
+        @keyframes flowerVis {{
+            0% {{ opacity: 0; transform: scale(0.5); }}
+            12% {{ opacity: 0; transform: scale(0.8); }} /* 0.6s */
+            15% {{ opacity: 1; transform: scale(1); }}   /* 0.75s */
+            85% {{ opacity: 1; transform: scale(1); }}   /* 4.25s */
+            100% {{ opacity: 0; transform: scale(1.2); }} /* 5.0s */
+        }}
         
-        .flower-svg {{ width: 75px; height: 75px; transform-origin: bottom center; }}
+        .flower-svg {{ width: 85px; height: 85px; }}
         
-        /* Animation de la tige (0.6s à 1.6s) */
+        /* 3. L'éclosion de la fleur (Tige puis pétales) */
         .stem {{
             stroke-dasharray: 100; stroke-dashoffset: 100;
             animation: drawStem 1s ease-out 0.6s forwards;
         }}
         @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
 
-        /* Animation des pétales (Pousse lente jusqu'à 4s) */
-        .petal1 {{ animation: growPetal 1s ease-out 1.2s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
-        .petal2 {{ animation: growPetal 1s ease-out 1.9s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
-        .petal3 {{ animation: growPetal 1s ease-out 2.6s forwards; transform-origin: 50px 50px; opacity: 0; transform: scale(0); }}
+        .petal1 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.2s forwards; }}
+        .petal2 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.7s forwards; }}
+        .petal3 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 2.2s forwards; }}
         
-        @keyframes growPetal {{
-            0% {{ transform: scale(0) translateY(10px); opacity: 0; }}
+        @keyframes popPetal {{
+            0% {{ transform: scale(0) translateY(15px); opacity: 0; }}
             70% {{ transform: scale(1.1) translateY(0); opacity: 1; }}
             100% {{ transform: scale(1) translateY(0); opacity: 1; }}
-        }}
-        
-        @keyframes fadeOutLoader {{
-            100% {{ opacity: 0; visibility: hidden; display: none; z-index: -999; }}
         }}
 
         /* --- VISIBILITÉ DE LA CARTE DE CONNEXION --- */
