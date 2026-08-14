@@ -73,7 +73,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Animation Stabilisée)
+# 4. PAGE DE CONNEXION (Animation Background + Fleur 4s + Montée vers le haut)
 # ================================================================
 
 def page_login():
@@ -87,9 +87,6 @@ def page_login():
     if st.session_state["premiere_visite"]:
         loader_html = """
         <div id="loader-wrapper">
-            <div class="half top-half"></div>
-            <div class="half bottom-half"></div>
-            
             <div class="flower-container">
                 <svg class="flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <path class="stem" d="M50 100 Q 45 75 50 50" stroke="#007A33" stroke-width="5" fill="none" stroke-linecap="round" />
@@ -103,20 +100,19 @@ def page_login():
         animation_carte_css = """
         div[data-testid="stHorizontalBlock"] {
             opacity: 0;
-            animation: revealCard 1s ease-in-out 4.5s forwards !important;
+            animation: revealCard 0.8s ease-in-out 4.2s forwards !important;
         }
         @keyframes revealCard { to { opacity: 1; } }
         """
         st.session_state["premiere_visite"] = False
     else:
-        # Si on a déjà vu l'animation (ex: quand on tape le mot de passe), la carte est 100% visible
         animation_carte_css = """
         div[data-testid="stHorizontalBlock"] {
             opacity: 1 !important;
         }
         """
 
-    # Fond de l'application
+    # Fond de l'application (derrière la page de login)
     if bg_b64:
         bg_css = f"""
         .stApp {{
@@ -127,16 +123,18 @@ def page_login():
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
         }}
-        .half {{
-            background: linear-gradient(rgba(10, 18, 14, 0.95), rgba(10, 18, 14, 0.98)), 
+        .loader-bg {{
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(10, 18, 14, 0.85), rgba(10, 18, 14, 0.92)), 
                         url('data:image/jpg;base64,{bg_b64}');
             background-size: cover; background-position: center; background-attachment: fixed;
+            z-index: 10;
         }}
         """
     else:
         bg_css = """
         .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; }
-        .half { background: #111; }
+        .loader-bg { background: #111; z-index: 10; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
         """
 
     # Injection HTML et CSS
@@ -156,51 +154,35 @@ def page_login():
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 999999; display: flex; justify-content: center; align-items: center;
-            pointer-events: none; /* Empêche le loader de bloquer les clics */
-            animation: destroyLoader 4.8s forwards;
+            pointer-events: none;
+            animation: slideUpLoader 0.8s cubic-bezier(0.8, 0, 0.2, 1) 4.0s forwards;
         }}
-        @keyframes destroyLoader {{
-            99% {{ opacity: 1; z-index: 999999; visibility: visible; }}
-            100% {{ opacity: 0; z-index: -1; visibility: hidden; display: none; }}
+        @keyframes slideUpLoader {{
+            to {{ transform: translateY(-100%); opacity: 0; visibility: hidden; display: none; z-index: -1; }}
         }}
         
-        /* Les Rideaux */
-        .half {{ position: absolute; left: 0; width: 100vw; height: 50vh; z-index: 10; }}
-        .top-half {{
-            top: 0; transform: translateY(-100%);
-            animation: slideInTop 0.6s ease-out forwards, fadeOutHalf 0.5s ease-in 4.2s forwards;
-        }}
-        .bottom-half {{
-            bottom: 0; transform: translateY(100%);
-            animation: slideInBottom 0.6s ease-out forwards, fadeOutHalf 0.5s ease-in 4.2s forwards;
-        }}
-        @keyframes slideInTop {{ to {{ transform: translateY(0); }} }}
-        @keyframes slideInBottom {{ to {{ transform: translateY(0); }} }}
-        @keyframes fadeOutHalf {{ to {{ opacity: 0; }} }}
-
-        /* La Fleur */
+        /* La Fleur s'anime pendant les 4 secondes de pause du background */
         .flower-container {{
-            position: relative; z-index: 20; opacity: 0;
-            animation: flowerVis 4.5s forwards;
+            position: relative; z-index: 20;
+            animation: flowerFade 4.0s forwards;
         }}
-        @keyframes flowerVis {{
-            0%, 10% {{ opacity: 0; transform: scale(0.5); }}
-            15%, 85% {{ opacity: 1; transform: scale(1); }}
-            95%, 100% {{ opacity: 0; transform: scale(1.2); }}
+        @keyframes flowerFade {{
+            0%, 85% {{ opacity: 1; transform: scale(1); }}
+            100% {{ opacity: 0; transform: scale(1.1); }}
         }}
         
-        .flower-svg {{ width: 85px; height: 85px; }}
+        .flower-svg {{ width: 90px; height: 90px; }}
         
-        /* Tige et Pétales */
-        .stem {{ stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawStem 0.8s ease-out 0.6s forwards; }}
+        /* Tige (0s à 1s) et Pétales (1s à 3.5s) */
+        .stem {{ stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawStem 1s ease-out 0.3s forwards; }}
         @keyframes drawStem {{ to {{ stroke-dashoffset: 0; }} }}
 
-        .petal1 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.6s ease-out 1.2s forwards; }}
-        .petal2 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.6s ease-out 1.6s forwards; }}
-        .petal3 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.6s ease-out 2.0s forwards; }}
+        .petal1 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.0s forwards; }}
+        .petal2 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 1.8s forwards; }}
+        .petal3 {{ opacity: 0; transform-origin: 50px 50px; animation: popPetal 0.8s ease-out 2.6s forwards; }}
         
         @keyframes popPetal {{
-            0% {{ transform: scale(0) translateY(10px); opacity: 0; }}
+            0% {{ transform: scale(0) translateY(15px); opacity: 0; }}
             70% {{ transform: scale(1.1) translateY(0); opacity: 1; }}
             100% {{ transform: scale(1) translateY(0); opacity: 1; }}
         }}
