@@ -39,16 +39,6 @@ if "historique" not in st.session_state:
 if "premiere_visite" not in st.session_state:
     st.session_state["premiere_visite"] = True
 
-# États pour le Pan/Zoom de l'image de fond
-if "bg_zoom" not in st.session_state:
-    st.session_state["bg_zoom"] = 100  # En pourcent (%)
-
-if "bg_pos_y" not in st.session_state:
-    st.session_state["bg_pos_y"] = 50  # En pourcent (%)
-
-if "bg_pos_x" not in st.session_state:
-    st.session_state["bg_pos_x"] = 50  # En pourcent (%)
-
 # ================================================================
 # 3. GESTION DES IMAGES (Logo et Background)
 # ================================================================
@@ -82,7 +72,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Avec Contrôles de Zoom et Déplacement)
+# 4. PAGE DE CONNEXION (Zoom Molette & Déplacement Souris)
 # ================================================================
 
 def page_login():
@@ -120,26 +110,25 @@ def page_login():
         }
         """
 
-    # Application dynamique du Zoom et du Pan (Déplacement) via les variables de session
-    zoom_val = f"{st.session_state['bg_zoom']}%"
-    pos_x_val = f"{st.session_state['bg_pos_x']}%"
-    pos_y_val = f"{st.session_state['bg_pos_y']}%"
-
     if bg_b64:
         bg_css = f"""
         .stApp {{
             background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: {zoom_val} !important;
-            background-position: {pos_x_val} {pos_y_val} !important;
+            background-size: 100% auto !important;
+            background-position: center center !important;
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
+            cursor: grab;
+        }}
+        .stApp:active {{
+            cursor: grabbing;
         }}
         #loader-wrapper {{
             background: linear-gradient(rgba(10, 15, 12, 0.45), rgba(5, 10, 8, 0.65)), 
                         url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: {zoom_val} !important;
-            background-position: {pos_x_val} {pos_y_val} !important;
+            background-size: cover !important;
+            background-position: center !important;
         }}
         """
     else:
@@ -148,7 +137,7 @@ def page_login():
         #loader-wrapper { background: linear-gradient(135deg, rgba(20,20,20,0.95), rgba(5,5,5,0.98)) !important; }
         """
 
-    # Injection HTML et CSS
+    # Injection HTML, CSS et Script JavaScript pour le Pan/Zoom à la souris
     st.markdown(
         f"""
         {loader_html}
@@ -201,7 +190,7 @@ def page_login():
 
         div[data-testid="stFormSubmitInstructions"], div[data-testid="InputInstructions"] {{ display: none !important; }}
 
-        .block-container {{ padding-top: 10vh !important; padding-bottom: 10vh !important; max-width: 750px !important; }}
+        .block-container {{ padding-top: 15vh !important; padding-bottom: 15vh !important; max-width: 750px !important; }}
 
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
@@ -236,43 +225,64 @@ def page_login():
             border: none !important; margin-top: 15px !important; transition: 0.3s ease !important;
         }}
         div[data-testid="stFormSubmitButton"] button:hover {{ background-color: #005f27 !important; transform: translateY(-2px); }}
-        
-        /* --- STYLE DU PANNEAU DE CONTRÔLE FLOTTANT (ZOOM & PAN) --- */
-        .control-panel {{
-            background: rgba(255, 255, 255, 0.9) !important;
-            padding: 10px 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-        }}
         </style>
+
+        <script>
+        // Script interactif pour Zoom (Molette) et Pan (Glisser-déposer avec la souris)
+        document.addEventListener("DOMContentLoaded", function() {{
+            const app = document.querySelector('.stApp');
+            if (!app) return;
+
+            let scale = 100; // Zoom en %
+            let posX = 50;   // Position X en %
+            let posY = 50;   // Position Y en %
+            let isDragging = false;
+            let startX, startY;
+
+            app.addEventListener('mousedown', function(e) {{
+                // Ne s'active pas si on clique sur la carte blanche ou un champ
+                if (e.target.closest('[data-testid="stHorizontalBlock"]')) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            }});
+
+            window.addEventListener('mousemove', function(e) {{
+                if (!isDragging) return;
+                let dx = e.clientX - startX;
+                let dy = e.clientY - startY;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                posX -= dx * 0.05;
+                posY -= dy * 0.05;
+                
+                // Limites
+                posX = Math.max(0, Math.min(100, posX));
+                posY = Math.max(0, Math.min(100, posY));
+
+                app.style.backgroundPosition = `${{posX}}% ${{posY}}%`;
+            }});
+
+            window.addEventListener('mouseup', function() {{
+                isDragging = false;
+            }});
+
+            app.addEventListener('wheel', function(e) {{
+                if (e.target.closest('[data-testid="stHorizontalBlock"]')) return;
+                e.preventDefault();
+                if (e.deltaY < 0) {{
+                    scale = Math.min(300, scale + 10); // Zoom In
+                }} else {{
+                    scale = Math.max(50, scale - 10);  // Zoom Out
+                }}
+                app.style.backgroundSize = `${{scale}}% auto`;
+            }}, {{ passive: false }});
+        }});
+        </script>
         """,
         unsafe_allow_html=True
     )
-
-    # --- PANNEAU FLOTTANT DE CONTRÔLE (ZOOM & DÉPLACEMENT) ---
-    with st.expander("🔍 Contrôler le fond d'écran (Zoom & Déplacement)", expanded=False):
-        c_z1, c_z2, c_z3 = st.columns(3)
-        with c_z1:
-            if st.button("🔍 Zoom In (+)", use_container_width=True):
-                st.session_state["bg_zoom"] = min(300, st.session_state["bg_zoom"] + 20)
-                st.rerun()
-        with c_z2:
-            if st.button("🔍 Zoom Out (-)", use_container_width=True):
-                st.session_state["bg_zoom"] = max(50, st.session_state["bg_zoom"] - 20)
-                st.rerun()
-        with c_z3:
-            if st.button("↺ Réinitialiser", use_container_width=True):
-                st.session_state["bg_zoom"] = 100
-                st.session_state["bg_pos_x"] = 50
-                st.session_state["bg_pos_y"] = 50
-                st.rerun()
-
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            st.session_state["bg_pos_x"] = st.slider("Déplacement Horizontal (Gauche / Droite)", 0, 100, st.session_state["bg_pos_x"])
-        with col_p2:
-            st.session_state["bg_pos_y"] = st.slider("Déplacement Vertical (Haut / Bas)", 0, 100, st.session_state["bg_pos_y"])
 
     col_logo, col_form = st.columns([1, 1.3], gap="medium")
 
