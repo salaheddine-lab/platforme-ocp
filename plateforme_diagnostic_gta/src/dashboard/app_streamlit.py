@@ -11,7 +11,6 @@ from datetime import datetime
 import time
 import base64
 from pathlib import Path
-import os
 
 # ================================================================
 # 1. CONFIGURATION GLOBALE
@@ -67,29 +66,30 @@ def trouver_fichier(noms_fichiers):
     return None
 
 CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vector.svg-.png"])
-CHEMIN_FOND = trouver_fichier(["OIP (1).jpg", "OIP.jpg"]) # Assurez-vous que le nom de votre nouvelle image est bien dans cette liste
+# Ajout du nouveau nom d'image dans la liste
+CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Sans effet de flou)
+# 4. PAGE DE CONNEXION (Correction Répétition & Taille)
 # ================================================================
 
 def page_login():
     bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
     
-    # Image de fond nette avec un léger overlay sombre pour faire ressortir la carte
+    # Image de fond avec overlay sombre et ajout strict de background-repeat: no-repeat
     if bg_b64:
         bg_html = f"""
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
                     background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
                                 url('data:image/jpg;base64,{bg_b64}');
-                    background-size: cover; background-position: center; 
+                    background-size: cover; background-position: center; background-repeat: no-repeat;
                     z-index: -999;">
         </div>
         """
     else:
         bg_html = """
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
                     background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)); 
                     z-index: -999;">
         </div>
@@ -107,23 +107,23 @@ def page_login():
         #MainMenu, header, footer {{ visibility: hidden; }}
         [data-testid="stSidebar"] {{ display: none; }}
 
-        /* Rendre l'application transparente pour voir la div de fond qu'on a ajoutée */
+        /* Rendre l'application transparente pour voir la div de fond */
         .stApp {{
             background: transparent !important;
         }}
 
-        /* --- CENTRAGE DE LA CARTE --- */
+        /* --- CENTRAGE ET RÉDUCTION DE LA CARTE --- */
         .block-container {{
             padding-top: 15vh !important;
-            max-width: 950px !important;
+            max-width: 750px !important; /* Réduit de 950px à 750px pour une carte plus petite */
         }}
 
         /* --- LA CARTE BLANCHE --- */
         div[data-testid="stHorizontalBlock"] {{
             background-color: rgba(255, 255, 255, 0.98) !important;
-            border-radius: 25px !important;
-            padding: 50px 40px !important;
-            box-shadow: 0px 25px 60px rgba(0,0,0,0.8) !important;
+            border-radius: 20px !important;
+            padding: 40px 30px !important; /* Marges internes réduites */
+            box-shadow: 0px 15px 50px rgba(0,0,0,0.7) !important;
             align-items: center !important;
         }}
 
@@ -137,15 +137,15 @@ def page_login():
         div[data-testid="stTextInput"] label p {{
             color: #007A33 !important;
             font-weight: 600 !important;
-            font-size: 14px !important;
+            font-size: 13px !important; /* Légèrement plus petit */
         }}
 
         div[data-testid="stTextInput"] input {{
             background-color: #f4f6f9 !important;
             border: 1px solid #e1e8ed !important;
             border-radius: 8px !important;
-            padding: 12px 15px !important;
-            font-size: 15px !important;
+            padding: 10px 14px !important;
+            font-size: 14px !important;
             color: #333 !important;
         }}
 
@@ -160,11 +160,11 @@ def page_login():
             color: white !important;
             border-radius: 30px !important;
             font-weight: 600 !important;
-            font-size: 16px !important;
-            padding: 10px 24px !important;
+            font-size: 15px !important;
+            padding: 8px 24px !important;
             width: 100% !important;
             border: none !important;
-            margin-top: 20px !important;
+            margin-top: 15px !important;
             transition: 0.3s ease !important;
         }}
         div[data-testid="stFormSubmitButton"] button:hover {{
@@ -176,15 +176,15 @@ def page_login():
         unsafe_allow_html=True
     )
 
-    col_logo, col_form = st.columns([1, 1.4], gap="large")
+    col_logo, col_form = st.columns([1, 1.3], gap="medium")
 
     with col_logo:
-        # Affichage du logo centré et redimensionné avec du HTML personnalisé
+        # Affichage du logo centré et redimensionné (plus petit)
         if logo_b64:
             st.markdown(
                 f"""
                 <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
-                    <img src="data:image/jpg;base64,{logo_b64}" style="max-width: 220px; width: 100%; height: auto; display: block;" alt="Logo OCP" />
+                    <img src="data:image/jpg;base64,{logo_b64}" style="max-width: 180px; width: 100%; height: auto; display: block;" alt="Logo OCP" />
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -193,15 +193,16 @@ def page_login():
             st.markdown("""
                 <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
                     <div style="text-align: center; color: #007A33;">
-                        <h1 style="font-size: 60px; margin: 0;">OCP</h1>
-                        <p style="font-weight: 600; letter-spacing: 2px;">GROUPE OCP</p>
+                        <h1 style="font-size: 50px; margin: 0;">OCP</h1>
+                        <p style="font-weight: 600; letter-spacing: 2px; font-size: 12px;">GROUPE OCP</p>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
     with col_form:
-        st.markdown("<h2 style='color: #202522; font-weight: 700; font-size: 28px; margin-bottom: 5px; line-height: 1.2;'>Bienvenue sur votre<br>Dashboard GTA</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #7a817d; font-size: 14px; margin-bottom: 25px;'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
+        # Titre légèrement réduit pour correspondre à la nouvelle taille
+        st.markdown("<h2 style='color: #202522; font-weight: 700; font-size: 24px; margin-bottom: 5px; line-height: 1.2;'>Bienvenue sur votre<br>Dashboard GTA</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #7a817d; font-size: 13px; margin-bottom: 20px;'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
 
         with st.form("login_form"):
             username = st.text_input("Identifiant *", placeholder="Entrez votre identifiant")
