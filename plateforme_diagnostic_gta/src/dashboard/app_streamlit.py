@@ -37,11 +37,10 @@ if "historique" not in st.session_state:
     st.session_state["historique"] = None
 
 # ================================================================
-# 3. GESTION DES IMAGES (Logo et Background)
+# 3. GESTION DES IMAGES (Logo)
 # ================================================================
 
 def get_base64_image(image_path):
-    """Encode une image en base64 pour l'utiliser dans le CSS."""
     try:
         with open(image_path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
@@ -49,7 +48,6 @@ def get_base64_image(image_path):
         return ""
 
 def trouver_fichier(noms_fichiers):
-    """Cherche l'image dans plusieurs dossiers possibles pour éviter les erreurs de chemin."""
     dossiers_a_chercher = [
         Path(__file__).parent,
         Path(__file__).parent / "assets",
@@ -66,34 +64,13 @@ def trouver_fichier(noms_fichiers):
     return None
 
 CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vector.svg-.png"])
-CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION 
+# 4. PAGE DE CONNEXION (Design fidèle à la capture d'écran)
 # ================================================================
 
 def page_login():
-    bg_b64 = get_base64_image(CHEMIN_FOND) if CHEMIN_FOND else ""
     logo_b64 = get_base64_image(CHEMIN_LOGO) if CHEMIN_LOGO else ""
-    
-    # Application du fond directement sur le conteneur principal (.stApp)
-    if bg_b64:
-        bg_css = f"""
-        .stApp {{
-            background: linear-gradient(rgba(20, 30, 25, 0.4), rgba(10, 15, 10, 0.8)), 
-                        url('data:image/jpg;base64,{bg_b64}') !important;
-            background-size: cover !important;
-            background-position: center !important;
-            background-repeat: no-repeat !important;
-            background-attachment: fixed !important;
-        }}
-        """
-    else:
-        bg_css = """
-        .stApp {{
-            background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99)) !important;
-        }}
-        """
 
     st.markdown(
         f"""
@@ -107,22 +84,55 @@ def page_login():
         [data-testid="stSidebar"] {{ display: none !important; }}
         [data-testid="collapsedControl"] {{ display: none !important; }}
 
-        /* Injection de l'image de fond */
-        {bg_css}
+        /* --- FOND ANTHRACITE COMME SUR L'IMAGE --- */
+        .stApp {{
+            background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%) !important;
+            /* Permet le défilement haut/bas (scroll) si nécessaire */
+            overflow-y: auto !important;
+        }}
 
-        /* --- CENTRAGE ET RÉDUCTION DE LA CARTE --- */
+        /* --- MASQUER "Press Enter to submit form" --- */
+        div[data-testid="stFormSubmitInstructions"], 
+        div[data-testid="InputInstructions"] {{
+            display: none !important;
+        }}
+
+        /* --- CENTRAGE ET ESPACEMENT --- */
         .block-container {{
-            padding-top: 15vh !important;
-            max-width: 750px !important;
+            padding-top: 12vh !important;
+            padding-bottom: 12vh !important;
+            max-width: 800px !important;
+        }}
+
+        /* --- ANIMATION FLOTTANTE (Haut vers le bas) --- */
+        @keyframes float {{
+            0% {{ transform: translateY(0px); box-shadow: 0px 10px 40px rgba(0,0,0,0.5); }}
+            50% {{ transform: translateY(-15px); box-shadow: 0px 25px 50px rgba(0,0,0,0.6); }}
+            100% {{ transform: translateY(0px); box-shadow: 0px 10px 40px rgba(0,0,0,0.5); }}
         }}
 
         /* --- LA CARTE BLANCHE --- */
         div[data-testid="stHorizontalBlock"] {{
-            background-color: rgba(255, 255, 255, 0.98) !important;
-            border-radius: 20px !important;
-            padding: 40px 30px !important;
-            box-shadow: 0px 15px 50px rgba(0,0,0,0.7) !important;
+            background-color: #ffffff !important;
+            border-radius: 18px !important;
+            padding: 50px 40px !important;
             align-items: center !important;
+            animation: float 6s ease-in-out infinite; /* Application de l'animation */
+        }}
+
+        /* --- TITRE ET SOUS-TITRE --- */
+        .login-title {{
+            color: #6c757d;
+            font-weight: 400;
+            font-size: 26px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }}
+        .login-title b {{ color: #495057; font-weight: 600; }}
+        .login-subtitle {{
+            color: #8c98a4;
+            font-size: 13px;
+            margin-bottom: 30px;
         }}
 
         /* --- STYLE DU FORMULAIRE ET DES CHAMPS --- */
@@ -132,56 +142,74 @@ def page_login():
             background: transparent !important;
         }}
 
+        /* Libellés en vert */
         div[data-testid="stTextInput"] label p {{
-            color: #007A33 !important;
-            font-weight: 600 !important;
-            font-size: 13px !important;
+            color: #00a651 !important;
+            font-weight: 500 !important;
+            font-size: 12px !important;
+            margin-bottom: 2px !important;
         }}
 
+        /* Fond bleuté des champs et ajout des icônes SVG */
         div[data-testid="stTextInput"] input {{
-            background-color: #f4f6f9 !important;
-            border: 1px solid #e1e8ed !important;
-            border-radius: 8px !important;
-            padding: 10px 14px !important;
+            background-color: #eef2f9 !important;
+            border: none !important;
+            border-radius: 4px !important;
+            padding: 12px 15px 12px 40px !important; /* Espace pour l'icône */
             font-size: 14px !important;
             color: #333 !important;
         }}
 
-        div[data-testid="stTextInput"] input:focus {{
-            border-color: #007A33 !important;
-            box-shadow: 0 0 0 1px #007A33 !important;
+        /* Icône Utilisateur pour le premier champ */
+        div[data-testid="stForm"] div[data-testid="stVerticalBlock"] > div:nth-child(1) input {{
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%236c757d" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>') !important;
+            background-repeat: no-repeat !important;
+            background-position: 12px center !important;
         }}
 
-        /* --- BOUTON CONNECTER --- */
+        /* Icône Cadenas pour le deuxième champ */
+        div[data-testid="stForm"] div[data-testid="stVerticalBlock"] > div:nth-child(2) input {{
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%236c757d" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>') !important;
+            background-repeat: no-repeat !important;
+            background-position: 12px center !important;
+        }}
+
+        /* --- BOUTON CONNECTER CENTRÉ --- */
+        div[data-testid="stFormSubmitButton"] {{
+            display: flex !important;
+            justify-content: center !important;
+            margin-top: 25px !important;
+        }}
         div[data-testid="stFormSubmitButton"] button {{
-            background-color: #007A33 !important;
+            background-color: #00b87c !important;
             color: white !important;
             border-radius: 30px !important;
-            font-weight: 600 !important;
+            font-weight: 500 !important;
             font-size: 15px !important;
-            padding: 8px 24px !important;
-            width: 100% !important;
+            padding: 8px 35px !important;
+            width: auto !important; /* Largeur automatique pour ressembler à l'image */
             border: none !important;
-            margin-top: 15px !important;
             transition: 0.3s ease !important;
+            box-shadow: 0 4px 10px rgba(0, 184, 124, 0.3) !important;
         }}
         div[data-testid="stFormSubmitButton"] button:hover {{
-            background-color: #005f27 !important;
+            background-color: #00a651 !important;
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 166, 81, 0.4) !important;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    col_logo, col_form = st.columns([1, 1.3], gap="medium")
+    col_logo, col_form = st.columns([1, 1.2], gap="large")
 
     with col_logo:
         if logo_b64:
             st.markdown(
                 f"""
                 <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px; width: 100%;">
-                    <img src="data:image/jpg;base64,{logo_b64}" style="width: 90px; height: auto; display: block;" alt="Logo OCP" />
+                    <img src="data:image/jpg;base64,{logo_b64}" style="width: 140px; height: auto; display: block;" alt="Logo OCP" />
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -189,20 +217,19 @@ def page_login():
         else:
             st.markdown("""
                 <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px;">
-                    <div style="text-align: center; color: #007A33;">
-                        <h1 style="font-size: 30px; margin: 0;">OCP</h1>
-                        <p style="font-weight: 600; letter-spacing: 1px; font-size: 10px;">GROUPE OCP</p>
+                    <div style="text-align: center; color: #00a651;">
+                        <h1 style="font-size: 40px; margin: 0;">OCP</h1>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
     with col_form:
-        st.markdown("<h2 style='color: #202522; font-weight: 700; font-size: 24px; margin-bottom: 5px; line-height: 1.2;'>Bienvenue sur votre<br>Dashboard GTA</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #7a817d; font-size: 13px; margin-bottom: 20px;'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
+        st.markdown("<h2 class='login-title'>Bienvenue sur votre<br>portail <b>Dashboard GTA</b></h2>", unsafe_allow_html=True)
+        st.markdown("<p class='login-subtitle'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
 
         with st.form("login_form"):
-            username = st.text_input("Identifiant *", placeholder="Entrez votre identifiant")
-            password = st.text_input("Mot de passe *", type="password", placeholder="Entrez votre mot de passe")
+            username = st.text_input("Identifiant *", value="admin")
+            password = st.text_input("Mot de passe *", type="password", value="1234567")
             
             submit = st.form_submit_button("Connecter")
 
@@ -213,7 +240,6 @@ def page_login():
                     st.rerun()
                 else:
                     st.error("Identifiant ou mot de passe incorrect.")
-
 
 # ================================================================
 # 5. CSS DU DASHBOARD ET TOP BAR
