@@ -2,17 +2,6 @@
 # DASHBOARD GTA - GROUPE OCP
 # Monitoring industriel d'un Groupe Turbo-Alternateur
 # ================================================================
-#
-# Installation des dépendances :
-# pip install streamlit pandas numpy plotly
-#
-# Lancement de l'application :
-# streamlit run app_streamlit.py
-#
-# Identifiants de démonstration :
-# Identifiant : admin
-# Mot de passe : 1234567
-# ================================================================
 
 import streamlit as st
 import pandas as pd
@@ -20,10 +9,11 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
 import time
-
+import base64
+from pathlib import Path
 
 # ================================================================
-# 1. CONFIGURATION GLOBALE DE LA PAGE
+# 1. CONFIGURATION GLOBALE
 # ================================================================
 
 st.set_page_config(
@@ -33,9 +23,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # ================================================================
-# 2. GESTION DE L'ÉTAT DE SESSION (SESSION STATE)
+# 2. GESTION DE L'ÉTAT DE SESSION
 # ================================================================
 
 if "authentifie" not in st.session_state:
@@ -47,574 +36,144 @@ if "username" not in st.session_state:
 if "historique" not in st.session_state:
     st.session_state["historique"] = None
 
-
 # ================================================================
-# 3. CSS GLOBAL (Design UI/UX Professionnel & Police Poppins)
-# ================================================================
-
-st.markdown(
-    """
-    <style>
-
-    /* ============================================================
-       TYPOGRAPHIE
-       ============================================================ */
-
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-    * {
-        font-family: 'Poppins', sans-serif;
-    }
-
-    html, body, [class*="css"] {
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .stApp {
-        background: #f4f6f5;
-    }
-
-    /* ============================================================
-       SIDEBAR (Étroite ~85px, style vert OCP)
-       ============================================================ */
-
-    section[data-testid="stSidebar"] {
-        width: 85px !important;
-        min-width: 85px !important;
-        max-width: 85px !important;
-
-        background: linear-gradient(
-            180deg,
-            #006b2d 0%,
-            #007A33 50%,
-            #005b28 100%
-        );
-
-        border-right: none;
-    }
-
-    section[data-testid="stSidebar"] > div {
-        padding: 0.5rem 0.35rem;
-    }
-
-    section[data-testid="stSidebar"] * {
-        color: white !important;
-    }
-
-    section[data-testid="stSidebar"] div[role="radiogroup"] {
-        gap: 8px;
-    }
-
-    section[data-testid="stSidebar"] label {
-        background: transparent;
-        border-radius: 12px;
-        padding: 8px 4px;
-        margin-bottom: 4px;
-        transition: 0.2s ease;
-        justify-content: center;
-    }
-
-    section[data-testid="stSidebar"] label:hover {
-        background: rgba(255,255,255,0.12);
-    }
-
-    section[data-testid="stSidebar"] label[data-checked="true"] {
-        background: rgba(255,255,255,0.20);
-    }
-
-    section[data-testid="stSidebar"] label p {
-        font-size: 10px !important;
-        line-height: 1.15;
-        text-align: center;
-    }
-
-    section[data-testid="stSidebar"] input {
-        display: none;
-    }
-
-    /* ============================================================
-       TOP BAR
-       ============================================================ */
-
-    .topbar {
-        height: 72px;
-        background: white;
-        border-radius: 0 0 16px 16px;
-        padding: 0 25px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 3px 15px rgba(0,0,0,0.07);
-        margin-bottom: 22px;
-    }
-
-    .top-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .ocp-symbol {
-        width: 39px;
-        height: 39px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #00a651, #007A33);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 19px;
-        font-weight: 700;
-        box-shadow: 0 3px 8px rgba(0,122,51,0.25);
-    }
-
-    .ocp-text {
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 1px;
-        color: #006b2d;
-    }
-
-    /* ============================================================
-       TITRES & CARTES
-       ============================================================ */
-
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #202522;
-        margin-bottom: 2px;
-    }
-
-    .page-subtitle {
-        color: #7a817d;
-        font-size: 13px;
-        margin-bottom: 25px;
-    }
-
-    .dashboard-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-        border: 1px solid #edf0ee;
-    }
-
-    .section-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #303633;
-        margin-bottom: 10px;
-    }
-
-    /* ============================================================
-       ALERTES
-       ============================================================ */
-
-    .alert-normal {
-        background: #eaf7ef;
-        border-left: 5px solid #007A33;
-        border-radius: 10px;
-        padding: 13px 16px;
-        color: #176b3c;
-        margin-bottom: 10px;
-    }
-
-    .alert-warning {
-        background: #fff7df;
-        border-left: 5px solid #e4a900;
-        border-radius: 10px;
-        padding: 13px 16px;
-        color: #8a6500;
-        margin-bottom: 10px;
-    }
-
-    .alert-danger {
-        background: #fff0f0;
-        border-left: 5px solid #d93025;
-        border-radius: 10px;
-        padding: 13px 16px;
-        color: #9b2119;
-        margin-bottom: 10px;
-    }
-
-    /* ============================================================
-       PAGE DE CONNEXION (Pixel-Perfect)
-       ============================================================ */
-
-    .login-page {
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99));
-        overflow: hidden;
-    }
-
-    .login-page::before {
-        content: "";
-        position: absolute;
-        inset: -50%;
-        background: repeating-linear-gradient(135deg, transparent 0px, transparent 80px, rgba(255,255,255,0.025) 81px, transparent 82px);
-        transform: rotate(-5deg);
-    }
-
-    .login-container {
-        position: relative;
-        z-index: 2;
-        min-height: 88vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .login-card {
-        width: 850px;
-        min-height: 450px;
-        background: white;
-        border-radius: 22px;
-        box-shadow: 0 30px 80px rgba(0,0,0,0.45);
-        overflow: hidden;
-        display: flex;
-    }
-
-    .login-left {
-        width: 42%;
-        background: linear-gradient(145deg, #f7faf8, #eef4f0);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .login-logo {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .logo-big {
-        display: flex;
-        align-items: center;
-        font-size: 52px;
-        font-weight: 700;
-        color: #075c2c;
-    }
-
-    .logo-big-o {
-        width: 67px;
-        height: 67px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #00a651, #007A33);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 4px;
-    }
-
-    .logo-line {
-        width: 130px;
-        height: 4px;
-        background: #007A33;
-        border-radius: 5px;
-        margin-top: 5px;
-    }
-
-    .logo-subtitle {
-        color: #555;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 3px;
-        margin-top: 8px;
-    }
-
-    .login-right {
-        width: 58%;
-        padding: 55px 55px;
-    }
-
-    .login-title {
-        font-size: 26px;
-        font-weight: 700;
-        color: #202522;
-        margin-bottom: 5px;
-    }
-
-    .login-description {
-        color: #888;
-        font-size: 13px;
-        margin-bottom: 30px;
-    }
-
-    /* ============================================================
-       BOUTONS & METRICS
-       ============================================================ */
-
-    div.stButton > button {
-        border-radius: 30px;
-        border: none;
-        background: #007A33;
-        color: white;
-        font-weight: 600;
-        padding: 9px 24px;
-        transition: 0.2s ease;
-    }
-
-    div.stButton > button:hover {
-        background: #005f27;
-        color: white;
-        transform: translateY(-1px);
-    }
-
-    div[data-testid="stMetric"] {
-        background: white;
-        padding: 16px;
-        border-radius: 14px;
-        border: 1px solid #edf0ee;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-    }
-
-    div[data-testid="stMetricLabel"] {
-        color: #747b77;
-    }
-
-    .footer {
-        text-align: center;
-        color: #9aa09c;
-        font-size: 11px;
-        margin-top: 30px;
-        padding-bottom: 20px;
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# ================================================================
-# 4. COMPOSANT LOGO OCP
+# 3. GESTION DES IMAGES (Logo et Background)
 # ================================================================
 
-def ocp_logo():
-    return """
-    <div class="top-logo">
-        <div class="ocp-symbol">O</div>
-        <div class="ocp-text">CP</div>
-    </div>
-    """
+def get_base64_image(image_path):
+    """Encode une image en base64 pour l'utiliser dans le CSS."""
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except Exception:
+        return ""
 
+dossier_actuel = Path(__file__).parent
 
-# ================================================================
-# 5. SIMULATION DES DONNÉES INDUSTRIELLES GTA
-# ================================================================
+# Recherche du logo officiel (selon le nom de votre fichier)
+CHEMIN_LOGO = dossier_actuel / "../../assets/image_aa7580.jpg"
+if not CHEMIN_LOGO.exists():
+    CHEMIN_LOGO = dossier_actuel / "../../assets/ocp_logo.png"
 
-def generer_donnees_gta(n=60):
-    rng = np.random.default_rng()
-    maintenant = pd.Timestamp.now()
-
-    temps = pd.date_range(end=maintenant, periods=n, freq="min")
-
-    # Rendement GTA (%)
-    rendement = (
-        0.82
-        + 0.015 * np.sin(np.linspace(0, 4*np.pi, n))
-        + rng.normal(0, 0.004, n)
-    )
-    rendement = np.clip(rendement, 0.72, 0.90)
-
-    # Résistance thermique condenseur (K/W)
-    resistance = (
-        0.00042
-        + np.linspace(0, 0.00010, n)
-        + 0.000015 * np.sin(np.linspace(0, 3*np.pi, n))
-        + rng.normal(0, 0.000006, n)
-    )
-    resistance = np.clip(resistance, 0.00030, 0.00070)
-
-    # Perte turbine (%)
-    perte_turbine = (
-        6.2
-        + 0.6 * np.sin(np.linspace(0, 3*np.pi, n))
-        + rng.normal(0, 0.20, n)
-    )
-    perte_turbine = np.clip(perte_turbine, 4.0, 10.0)
-
-    # Perte alternateur (%)
-    perte_alternateur = (
-        3.8
-        + 0.4 * np.sin(np.linspace(0, 4*np.pi, n))
-        + rng.normal(0, 0.15, n)
-    )
-    perte_alternateur = np.clip(perte_alternateur, 2.5, 7.0)
-
-    temperature_vapeur = 515 + 5 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 1.2, n)
-    temperature_condenseur = 38 + 1.5 * np.sin(np.linspace(0, 3*np.pi, n)) + rng.normal(0, 0.5, n)
-    pression_entree = 42 + 0.4 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 0.08, n)
-    pression_sortie = 0.09 + rng.normal(0, 0.002, n)
-    puissance_turbine = 32 + 1.5 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 0.3, n)
-    puissance_alternateur = 29.5 + 1.3 * np.sin(np.linspace(0, 2*np.pi, n)) + rng.normal(0, 0.25, n)
-
-    df = pd.DataFrame({
-        "Temps": temps,
-        "Rendement": rendement * 100,
-        "Resistance": resistance,
-        "Perte_Turbine": perte_turbine,
-        "Perte_Alternateur": perte_alternateur,
-        "Temperature_Vapeur": temperature_vapeur,
-        "Temperature_Condenseur": temperature_condenseur,
-        "Pression_Entree": pression_entree,
-        "Pression_Sortie": pression_sortie,
-        "Puissance_Turbine": puissance_turbine,
-        "Puissance_Alternateur": puissance_alternateur
-    })
-
-    return df
-
+# Recherche de votre image de fond haute qualité
+CHEMIN_FOND = dossier_actuel / "../../assets/OIP (1).jpg"
 
 # ================================================================
-# 6. GESTION DES GRAPHIQUES PLOTLY
-# ================================================================
-
-def graphique_ligne(df, x, y, titre, nom_axe_y, unite=""):
-    fig = go.Figure()
-
-    fig.add_trace(
-        go.Scatter(
-            x=df[x],
-            y=df[y],
-            mode="lines",
-            name=y,
-            line=dict(shape="spline", width=3, color="#007A33"),
-            hovertemplate="%{y:.3f}" + f" {unite}<extra></extra>"
-        )
-    )
-
-    fig.update_layout(
-        title=titre,
-        template="plotly_white",
-        height=390,
-        margin=dict(l=20, r=20, t=55, b=20),
-        hovermode="x unified",
-        xaxis_title="Temps",
-        yaxis_title=nom_axe_y,
-        font=dict(family="Poppins", size=12),
-        legend=dict(orientation="h", y=1.1)
-    )
-
-    return fig
-
-
-# ================================================================
-# 7. SYSTÈME D'ALERTES ET DIAGNOSTICS
-# ================================================================
-
-def analyser_alertes(df):
-    dernier = df.iloc[-1]
-    alertes = []
-
-    if dernier["Rendement"] < 78:
-        alertes.append(("danger", "Rendement faible", f"Le rendement actuel est de {dernier['Rendement']:.2f} %."))
-    elif dernier["Rendement"] < 80:
-        alertes.append(("warning", "Rendement à surveiller", f"Le rendement actuel est de {dernier['Rendement']:.2f} %."))
-
-    if dernier["Resistance"] > 0.00055:
-        alertes.append(("danger", "Encrassement du condenseur", f"Résistance thermique élevée : {dernier['Resistance']:.6f} K/W."))
-    elif dernier["Resistance"] > 0.00050:
-        alertes.append(("warning", "Encrassement à surveiller", f"Résistance thermique : {dernier['Resistance']:.6f} K/W."))
-
-    if dernier["Perte_Turbine"] > 8:
-        alertes.append(("danger", "Pertes turbine élevées", f"Pertes estimées : {dernier['Perte_Turbine']:.2f} %."))
-
-    if dernier["Perte_Alternateur"] > 5:
-        alertes.append(("danger", "Pertes alternateur élevées", f"Pertes estimées : {dernier['Perte_Alternateur']:.2f} %."))
-
-    return alertes
-
-
-def afficher_alertes(df):
-    alertes = analyser_alertes(df)
-
-    if not alertes:
-        st.markdown(
-            """
-            <div class="alert-normal">
-                <b>✓ État normal</b><br>
-                Aucun dépassement de seuil détecté sur le GTA.
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        return
-
-    for niveau, titre, message in alertes:
-        classe = "alert-danger" if niveau == "danger" else "alert-warning"
-        symbole = "⚠" if niveau == "danger" else "!"
-        st.markdown(
-            f"""
-            <div class="{classe}">
-                <b>{symbole} {titre}</b><br>
-                {message}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-
-# ================================================================
-# 8. PAGE DE CONNEXION (LOGIN)
+# 4. PAGE DE CONNEXION (Correction des débordements + Nouveau Design)
 # ================================================================
 
 def page_login():
+    # Encodage de l'image de fond pour le CSS
+    bg_b64 = get_base64_image(CHEMIN_FOND)
+    
+    # Si l'image existe, on l'affiche, sinon on met le fond sombre dégradé
+    bg_css = f'background-image: url("data:image/jpg;base64,{bg_b64}");' if bg_b64 else 'background: linear-gradient(135deg, rgba(58,58,58,0.97), rgba(16,16,16,0.99));'
+
     st.markdown(
-        """
-        <div class="login-page">
-            <div class="login-container">
-                <div class="login-card">
-                    <div class="login-left">
-                        <div class="login-logo">
-                            <div class="logo-big">
-                                <div class="logo-big-o">O</div>
-                                CP
-                            </div>
-                            <div class="logo-line"></div>
-                            <div class="logo-subtitle">GROUPE OCP</div>
-                        </div>
-                    </div>
-                    <div class="login-right">
-                        <div class="login-title">Bienvenue sur votre Dashboard GTA</div>
-                        <div class="login-description">Merci de rentrer votre identifiant et mot de passe</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        html, body, [class*="css"] {{ font-family: 'Poppins', sans-serif; }}
+        #MainMenu, header, footer {{ visibility: hidden; }}
+        [data-testid="stSidebar"] {{ display: none; }}
+
+        /* --- FOND D'ÉCRAN HAUTE QUALITÉ --- */
+        .stApp {{
+            {bg_css}
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+
+        /* --- CENTRAGE DE LA CARTE --- */
+        .block-container {{
+            padding-top: 15vh !important;
+            max-width: 950px !important;
+        }}
+
+        /* --- LA CARTE BLANCHE (Cible les colonnes natives de Streamlit) --- */
+        /* Cela empêche définitivement les champs de sortir du cadre */
+        div[data-testid="stHorizontalBlock"] {{
+            background-color: rgba(255, 255, 255, 0.98) !important;
+            border-radius: 25px !important;
+            padding: 50px 40px !important;
+            box-shadow: 0px 25px 60px rgba(0,0,0,0.6) !important;
+            align-items: center !important;
+        }}
+
+        /* --- STYLE DU FORMULAIRE ET DES CHAMPS --- */
+        div[data-testid="stForm"] {{
+            border: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+        }}
+
+        div[data-testid="stTextInput"] label p {{
+            color: #007A33 !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+        }}
+
+        div[data-testid="stTextInput"] input {{
+            background-color: #f4f6f9 !important;
+            border: 1px solid #e1e8ed !important;
+            border-radius: 8px !important;
+            padding: 12px 15px !important;
+            font-size: 15px !important;
+            color: #333 !important;
+        }}
+
+        div[data-testid="stTextInput"] input:focus {{
+            border-color: #007A33 !important;
+            box-shadow: 0 0 0 1px #007A33 !important;
+        }}
+
+        /* --- BOUTON CONNECTER --- */
+        div[data-testid="stFormSubmitButton"] button {{
+            background-color: #007A33 !important;
+            color: white !important;
+            border-radius: 30px !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            padding: 10px 24px !important;
+            width: 100% !important;
+            border: none !important;
+            margin-top: 20px !important;
+            transition: 0.3s ease !important;
+        }}
+        div[data-testid="stFormSubmitButton"] button:hover {{
+            background-color: #005f27 !important;
+            transform: translateY(-2px);
+        }}
+        </style>
         """,
         unsafe_allow_html=True
     )
 
-    _, right = st.columns([1.2, 1.8])
+    # Création de la carte en utilisant la structure native de Streamlit (Garantit 0 débordement)
+    col_logo, col_form = st.columns([1, 1.4], gap="large")
 
-    with right:
-        st.markdown(
-            """
-            <style>
-            div[data-testid="stForm"] {
-                background: transparent !important;
-                border: none !important;
-                padding: 0 !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
+    with col_logo:
+        # Affichage du VRAI logo officiel OCP
+        st.write("<br>", unsafe_allow_html=True)
+        if CHEMIN_LOGO.exists():
+            st.image(str(CHEMIN_LOGO), use_container_width=True)
+        else:
+            st.warning("⚠️ Logo officiel introuvable dans assets/")
 
-        st.markdown("<div style='height: 175px'></div>", unsafe_allow_html=True)
+    with col_form:
+        st.markdown("<h2 style='color: #202522; font-weight: 700; font-size: 28px; margin-bottom: 5px; line-height: 1.2;'>Bienvenue sur votre<br>Dashboard GTA</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #7a817d; font-size: 14px; margin-bottom: 25px;'>Merci de rentrer votre identifiant et mot de passe</p>", unsafe_allow_html=True)
 
         with st.form("login_form"):
             username = st.text_input("Identifiant *", placeholder="Entrez votre identifiant")
             password = st.text_input("Mot de passe *", type="password", placeholder="Entrez votre mot de passe")
-            connexion = st.form_submit_button("Connecter", use_container_width=True)
+            
+            submit = st.form_submit_button("Connecter")
 
-            if connexion:
+            if submit:
                 if username == "admin" and password == "1234567":
                     st.session_state["authentifie"] = True
                     st.session_state["username"] = username
@@ -624,209 +183,160 @@ def page_login():
 
 
 # ================================================================
-# 9. TOP BAR ET SIDEBAR NAVIGATION
+# 5. CSS DU DASHBOARD ET TOP BAR
 # ================================================================
 
-def afficher_topbar():
-    col1, col2 = st.columns([4, 1])
-
-    with col1:
-        st.markdown(ocp_logo(), unsafe_allow_html=True)
-
-    with col2:
-        username = st.session_state["username"]
-        c1, c2 = st.columns([1.2, 1])
-
-        with c1:
-            st.markdown(
-                f"""
-                <div style="text-align:right; padding-top:8px; color:#444; font-size:13px; font-weight:500;">
-                    👤 {username}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        with c2:
-            if st.button("Se déconnecter", key="logout"):
-                st.session_state["authentifie"] = False
-                st.session_state["username"] = ""
-                st.rerun()
-
-
-def afficher_sidebar():
-    st.sidebar.markdown(
+def appliquer_css_dashboard():
+    st.markdown(
         """
-        <div style="text-align:center; font-size:25px; margin-bottom:15px;">
-            🏭
-        </div>
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+        .stApp { background: #f4f6f5; }
+
+        /* Sidebar étroite */
+        section[data-testid="stSidebar"] {
+            background-color: #007A33 !important;
+            width: 85px !important;
+            min-width: 85px !important;
+            max-width: 85px !important;
+        }
+        section[data-testid="stSidebar"] * { color: white !important; }
+        
+        div[data-testid="stMetric"] {
+            background: white;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid #edf0ee;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+        }
+        </style>
         """,
         unsafe_allow_html=True
     )
 
-    choix = st.sidebar.radio(
+def afficher_topbar():
+    col_nav_logo, col_nav_user = st.columns([2, 2])
+    with col_nav_logo:
+        st.markdown(
+            """
+            <div style="display: flex; align-items: center; gap: 8px; padding-top: 5px;">
+                <span style="font-size: 24px; font-weight: 700; color: #007A33;">🟢 OCP</span>
+                <span style="font-size: 14px; font-weight: 600; color: #2c3e50;">| Dashboard GTA</span>
+            </div>
+            """, unsafe_allow_html=True
+        )
+    with col_nav_user:
+        c1, c2 = st.columns([3, 2])
+        with c1:
+            st.markdown(f"<p style='margin-top: 10px; font-weight: bold; color: #2c3e50; text-align: right;'>👤 {st.session_state['username']}</p>", unsafe_allow_html=True)
+        with c2:
+            if st.button("🚪 Déconnexion", use_container_width=True):
+                st.session_state["authentifie"] = False
+                st.session_state["username"] = ""
+                st.rerun()
+    st.markdown("<hr style='margin: 0px 0px 20px 0px;'>", unsafe_allow_html=True)
+
+
+def afficher_sidebar():
+    st.sidebar.markdown("<h3 style='text-align: center; color: #ffffff; font-size: 15px;'>GTA</h3>", unsafe_allow_html=True)
+    return st.sidebar.radio(
         "Navigation",
-        [
-            "🏠 Accueil",
-            "📈 Rendement",
-            "🌡️ Résistance d'encrassement",
-            "⚡ Perte turbine",
-            "🔌 Perte alternateur"
-        ],
+        ["🏠 Accueil", "📈 Rendement", "🌡️ Résistance d'encrassement", "⚡ Perte turbine", "🔌 Perte alternateur"],
         label_visibility="collapsed"
     )
 
-    return choix
-
-
 # ================================================================
-# 10. PAGES FONCTIONNELLES DU DASHBOARD
+# 6. MOTEUR DE SIMULATION ET GRAPHIQUES
 # ================================================================
 
-def page_accueil(df):
-    st.markdown('<div class="page-title">Centre de monitoring GTA</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Vue globale du Groupe Turbo-Alternateur • Surveillance en temps réel</div>', unsafe_allow_html=True)
+def generer_donnees_gta(n=60):
+    rng = np.random.default_rng()
+    temps = pd.date_range(end=pd.Timestamp.now(), periods=n, freq="min")
+    
+    rendement = np.clip(0.82 + 0.015 * np.sin(np.linspace(0, 4*np.pi, n)) + rng.normal(0, 0.004, n), 0.72, 0.90)
+    resistance = np.clip(0.00042 + np.linspace(0, 0.00010, n) + 0.000015 * np.sin(np.linspace(0, 3*np.pi, n)) + rng.normal(0, 0.000006, n), 0.00030, 0.00070)
+    perte_turb = np.clip(6.2 + 0.6 * np.sin(np.linspace(0, 3*np.pi, n)) + rng.normal(0, 0.20, n), 4.0, 10.0)
+    perte_alt = np.clip(3.8 + 0.4 * np.sin(np.linspace(0, 4*np.pi, n)) + rng.normal(0, 0.15, n), 2.5, 7.0)
 
-    afficher_alertes(df)
-    st.markdown("<br>", unsafe_allow_html=True)
+    return pd.DataFrame({
+        "Temps": temps, "Rendement": rendement * 100, "Resistance": resistance,
+        "Perte_Turbine": perte_turb, "Perte_Alternateur": perte_alt
+    })
 
+def graphique_ligne(df, x, y, titre, nom_axe_y, unite=""):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df[x], y=df[y], mode="lines", name=y, line=dict(shape="spline", width=3, color="#007A33")))
+    fig.update_layout(title=titre, template="plotly_white", height=390, margin=dict(l=20, r=20, t=55, b=20), hovermode="x unified", yaxis_title=nom_axe_y)
+    return fig
+
+def afficher_alertes(df):
     dernier = df.iloc[-1]
-    precedent = df.iloc[-2]
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.metric("Rendement GTA", f"{dernier['Rendement']:.2f} %", f"{dernier['Rendement'] - precedent['Rendement']:.2f} %")
-    with c2:
-        st.metric("Résistance condenseur", f"{dernier['Resistance']:.6f}", f"{(dernier['Resistance'] - precedent['Resistance']):.6f}")
-    with c3:
-        st.metric("Perte turbine", f"{dernier['Perte_Turbine']:.2f} %", f"{dernier['Perte_Turbine'] - precedent['Perte_Turbine']:.2f} %")
-    with c4:
-        st.metric("Perte alternateur", f"{dernier['Perte_Alternateur']:.2f} %", f"{dernier['Perte_Alternateur'] - precedent['Perte_Alternateur']:.2f} %")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="section-title">Puissance turbine</div>', unsafe_allow_html=True)
-        fig = graphique_ligne(df, "Temps", "Puissance_Turbine", "Évolution de la puissance mécanique", "Puissance", "MW")
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        st.markdown('<div class="section-title">Puissance alternateur</div>', unsafe_allow_html=True)
-        fig = graphique_ligne(df, "Temps", "Puissance_Alternateur", "Évolution de la puissance électrique", "Puissance", "MW")
-        st.plotly_chart(fig, use_container_width=True)
-
-
-def page_rendement(df):
-    st.markdown('<div class="page-title">Rendement du GTA</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Suivi du rendement global du Groupe Turbo-Alternateur</div>', unsafe_allow_html=True)
-
-    dernier = df.iloc[-1]
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Rendement actuel", f"{dernier['Rendement']:.2f} %")
-    c2.metric("Rendement moyen", f"{df['Rendement'].mean():.2f} %")
-    c3.metric("Rendement maximal", f"{df['Rendement'].max():.2f} %")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    fig = graphique_ligne(df, "Temps", "Rendement", "Évolution du rendement global", "Rendement", "%")
-    st.plotly_chart(fig, use_container_width=True)
-
-
-def page_resistance(df):
-    st.markdown('<div class="page-title">Résistance d\'encrassement</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Suivi de la résistance thermique du condenseur</div>', unsafe_allow_html=True)
-
-    dernier = df.iloc[-1]
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Résistance actuelle", f"{dernier['Resistance']:.6f} K/W")
-    c2.metric("Valeur moyenne", f"{df['Resistance'].mean():.6f} K/W")
-    c3.metric("Valeur maximale", f"{df['Resistance'].max():.6f} K/W")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    fig = graphique_ligne(df, "Temps", "Resistance", "Évolution de la résistance thermique", "Résistance thermique", "K/W")
-    st.plotly_chart(fig, use_container_width=True)
-
-
-def page_perte_turbine(df):
-    st.markdown('<div class="page-title">Pertes turbine</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Analyse des pertes thermiques et mécaniques de la turbine</div>', unsafe_allow_html=True)
-
-    dernier = df.iloc[-1]
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Pertes actuelles", f"{dernier['Perte_Turbine']:.2f} %")
-    c2.metric("Pertes moyennes", f"{df['Perte_Turbine'].mean():.2f} %")
-    c3.metric("Pertes maximales", f"{df['Perte_Turbine'].max():.2f} %")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    fig = graphique_ligne(df, "Temps", "Perte_Turbine", "Évolution des pertes turbine", "Pertes", "%")
-    st.plotly_chart(fig, use_container_width=True)
-
-
-def page_perte_alternateur(df):
-    st.markdown('<div class="page-title">Pertes alternateur</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Analyse des pertes électriques de l\'alternateur</div>', unsafe_allow_html=True)
-
-    dernier = df.iloc[-1]
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Pertes actuelles", f"{dernier['Perte_Alternateur']:.2f} %")
-    c2.metric("Pertes moyennes", f"{df['Perte_Alternateur'].mean():.2f} %")
-    c3.metric("Pertes maximales", f"{df['Perte_Alternateur'].max():.2f} %")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    fig = graphique_ligne(df, "Temps", "Perte_Alternateur", "Évolution des pertes alternateur", "Pertes", "%")
-    st.plotly_chart(fig, use_container_width=True)
-
+    alertes = []
+    if dernier["Rendement"] < 80: alertes.append(("warning", "Rendement à surveiller", f"Rendement : {dernier['Rendement']:.2f} %"))
+    if dernier["Resistance"] > 0.00050: alertes.append(("danger", "Risque d'encrassement", f"Rth : {dernier['Resistance']:.6f} K/W"))
+    
+    if not alertes:
+        st.success("✓ Système stable - Fonctionnement nominal du GTA.")
+    else:
+        for niveau, titre, msg in alertes:
+            if niveau == "danger": st.error(f"⚠️ {titre} : {msg}")
+            else: st.warning(f"⚠️ {titre} : {msg}")
 
 # ================================================================
-# 11. MODE TEMPS RÉEL (FRAGMENTS STREAMLIT)
+# 7. ROUTEUR ET PAGES DU DASHBOARD
 # ================================================================
 
 def dashboard_realtime():
+    appliquer_css_dashboard()
+    
     @st.fragment(run_every="5s")
     def monitoring():
-        nouvelles_donnees = generer_donnees_gta(1)
-
         if st.session_state["historique"] is None:
             st.session_state["historique"] = generer_donnees_gta(59)
-
+            
         df = st.session_state["historique"]
-        df = pd.concat([df, nouvelles_donnees], ignore_index=True)
-        df = df.tail(60).reset_index(drop=True)
+        df = pd.concat([df, generer_donnees_gta(1)], ignore_index=True).tail(60).reset_index(drop=True)
         st.session_state["historique"] = df
 
         page = afficher_sidebar()
-
-        st.markdown('<div class="topbar">', unsafe_allow_html=True)
         afficher_topbar()
-        st.markdown('</div>', unsafe_allow_html=True)
 
         if page == "🏠 Accueil":
-            page_accueil(df)
-        elif page == "📈 Rendement":
-            page_rendement(df)
-        elif page == "🌡️ Résistance d'encrassement":
-            page_resistance(df)
-        elif page == "⚡ Perte turbine":
-            page_perte_turbine(df)
-        elif page == "🔌 Perte alternateur":
-            page_perte_alternateur(df)
+            st.title("🏭 Tableau de Bord - Accueil")
+            afficher_alertes(df)
+            st.markdown("---")
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Rendement", f"{df.iloc[-1]['Rendement']:.2f} %")
+            c2.metric("Rth Condenseur", f"{df.iloc[-1]['Resistance']:.6f}")
+            c3.metric("Perte Turbine", f"{df.iloc[-1]['Perte_Turbine']:.2f} %")
+            c4.metric("Perte Alternateur", f"{df.iloc[-1]['Perte_Alternateur']:.2f} %")
 
-        st.markdown(
-            f"""
-            <div class="footer">
-                Dashboard GTA • Groupe OCP • Monitoring temps réel • Dernière mise à jour : {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        elif page == "📈 Rendement":
+            st.title("📈 Évolution du Rendement")
+            st.metric("Rendement actuel", f"{df.iloc[-1]['Rendement']:.2f} %")
+            st.plotly_chart(graphique_ligne(df, "Temps", "Rendement", "Calcul du Rendement", "%", "%"), use_container_width=True)
+
+        elif page == "🌡️ Résistance d'encrassement":
+            st.title("🌡️ Résistance Thermique")
+            st.metric("Rth Actuelle", f"{df.iloc[-1]['Resistance']:.6f} K/W")
+            st.plotly_chart(graphique_ligne(df, "Temps", "Resistance", "Encrassement Condenseur", "K/W", "K/W"), use_container_width=True)
+
+        elif page == "⚡ Perte turbine":
+            st.title("⚡ Pertes Turbine")
+            st.metric("Pertes actuelles", f"{df.iloc[-1]['Perte_Turbine']:.2f} %")
+            st.plotly_chart(graphique_ligne(df, "Temps", "Perte_Turbine", "Pertes Mécaniques et Thermiques", "%", "%"), use_container_width=True)
+
+        elif page == "🔌 Perte alternateur":
+            st.title("🔌 Pertes Alternateur")
+            st.metric("Pertes actuelles", f"{df.iloc[-1]['Perte_Alternateur']:.2f} %")
+            st.plotly_chart(graphique_ligne(df, "Temps", "Perte_Alternateur", "Pertes Électriques", "%", "%"), use_container_width=True)
 
     monitoring()
 
-
 # ================================================================
-# 12. POINT D'ENTRÉE PRINCIPAL DE L'APPLICATION
+# LANCEMENT
 # ================================================================
-
 if not st.session_state["authentifie"]:
     page_login()
 else:
