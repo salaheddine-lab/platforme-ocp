@@ -69,7 +69,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Correction de la marge grise)
+# 4. PAGE DE CONNEXION 
 # ================================================================
 
 def page_login():
@@ -180,18 +180,18 @@ def page_login():
         if logo_b64:
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
-                    <img src="data:image/jpg;base64,{logo_b64}" style="max-width: 180px; width: 100%; height: auto; display: block;" alt="Logo OCP" />
+                <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px; width: 100%;">
+                    <img src="data:image/jpg;base64,{logo_b64}" style="width: 90px; height: auto; display: block;" alt="Logo OCP" />
                 </div>
                 """,
                 unsafe_allow_html=True
             )
         else:
             st.markdown("""
-                <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px;">
                     <div style="text-align: center; color: #007A33;">
-                        <h1 style="font-size: 50px; margin: 0;">OCP</h1>
-                        <p style="font-weight: 600; letter-spacing: 2px; font-size: 12px;">GROUPE OCP</p>
+                        <h1 style="font-size: 30px; margin: 0;">OCP</h1>
+                        <p style="font-weight: 600; letter-spacing: 1px; font-size: 10px;">GROUPE OCP</p>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
