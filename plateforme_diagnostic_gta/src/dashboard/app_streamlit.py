@@ -36,7 +36,6 @@ if "username" not in st.session_state:
 if "historique" not in st.session_state:
     st.session_state["historique"] = None
 
-# Variable pour suivre si c'est la toute première visite (pour l'animation de la fleur)
 if "premiere_visite" not in st.session_state:
     st.session_state["premiere_visite"] = True
 
@@ -73,7 +72,7 @@ CHEMIN_LOGO = trouver_fichier(["image_aa7580.jpg", "ocp_logo.png", "Ocp-Logo-Vec
 CHEMIN_FOND = trouver_fichier(["image_a99884.jpg", "OIP (1).jpg", "OIP.jpg"]) 
 
 # ================================================================
-# 4. PAGE DE CONNEXION (Animation Background + Fleur 4s + Montée vers le haut)
+# 4. PAGE DE CONNEXION (Background Noir ➔ Animation Fleur 4s ➔ Rideau vers le haut)
 # ================================================================
 
 def page_login():
@@ -83,7 +82,6 @@ def page_login():
     loader_html = ""
     animation_carte_css = ""
 
-    # L'animation complète ne se joue qu'à la première ouverture
     if st.session_state["premiere_visite"]:
         loader_html = """
         <div id="loader-wrapper">
@@ -123,18 +121,10 @@ def page_login():
             background-repeat: no-repeat !important;
             background-attachment: fixed !important;
         }}
-        .loader-bg {{
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(10, 18, 14, 0.85), rgba(10, 18, 14, 0.92)), 
-                        url('data:image/jpg;base64,{bg_b64}');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            z-index: 10;
-        }}
         """
     else:
         bg_css = """
         .stApp { background: linear-gradient(135deg, #3a3a3a, #101010) !important; }
-        .loader-bg { background: #111; z-index: 10; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
         """
 
     # Injection HTML et CSS
@@ -153,15 +143,18 @@ def page_login():
         /* --- SÉQUENCE D'ANIMATION --- */
         #loader-wrapper {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            /* Background noir demandé en premier */
+            background: linear-gradient(135deg, rgba(30,30,30,0.98), rgba(10,10,10,1));
             z-index: 999999; display: flex; justify-content: center; align-items: center;
             pointer-events: none;
+            /* L'effet de levé de rideau vers le haut après 4 secondes */
             animation: slideUpLoader 0.8s cubic-bezier(0.8, 0, 0.2, 1) 4.0s forwards;
         }}
         @keyframes slideUpLoader {{
             to {{ transform: translateY(-100%); opacity: 0; visibility: hidden; display: none; z-index: -1; }}
         }}
         
-        /* La Fleur s'anime pendant les 4 secondes de pause du background */
+        /* La Fleur s'anime pendant les 4 secondes sur le fond noir */
         .flower-container {{
             position: relative; z-index: 20;
             animation: flowerFade 4.0s forwards;
