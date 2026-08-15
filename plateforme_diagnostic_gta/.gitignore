@@ -1,0 +1,29 @@
+# Fichiers de données volumineux et confidentiels (Ne jamais commiter)
+data/brutes/*.xlsx
+data/brutes/*.csv
+data/brutes/*.parquet
+data/traitees/*.csv
+data/traitees/*.parquet
+
+# Modèles de Machine Learning (Fichiers lourds générés localement)
+data/traitees/*.cbm
+
+# Environnements virtuels (Chaque développeur doit recréer le sien)
+.venv/
+venv/
+env/
+.env
+
+# Fichiers générés automatiquement par Python (Cache)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Fichiers de configuration de l'éditeur de code (IDE)
+.vscode/
+.idea/
+
+# Fichiers système invisibles
+.DS_Store
+Thumbs.db
